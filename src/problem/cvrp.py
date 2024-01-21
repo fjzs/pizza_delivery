@@ -1,4 +1,9 @@
+from typing import Dict, List
+
+import matplotlib.patches as patches
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.path import Path
 from scipy.spatial.distance import cdist
 
 from problem import instance
@@ -14,8 +19,8 @@ class CVRP:
         self.Q = data["Q"]  # capacity of vehicles
         self.N = data["N"]  # number of clients (not considering depot)
         self.demand = data["demand"]  # demand of each node
-        coordinates = np.asarray(data["coordinates"])
-        self.distance = self._get_distances(coordinates)
+        self.coordinates = np.asarray(data["coordinates"])
+        self.distance = self._get_distances(self.coordinates)
         print(f"distances:\n{self.distance}")
         print(f"demand:\n{self.demand}")
 
@@ -36,3 +41,36 @@ class CVRP:
         assert distances.shape == (n, n)
         assert np.all(distances >= 0)
         return distances
+
+    def draw(self, routes: Dict[int, List[int]], save_file=False, file_name=None):
+        fig, ax = plt.subplots()
+        pos = self.coordinates
+
+        # Plot nodes ids
+        for i in range(self.N + 1):
+            x, y = self.coordinates[i, :]
+            color = "red" if i == 0 else "blue"
+            ax.scatter(x, y, s=200, color=color)
+            plt.annotate(str(i), (x - 0.3, y - 0.35), color="white", size=10)
+
+        # Plot the routes
+        for route in routes.values():
+            verts = [pos[n] for n in route]
+            path = Path(verts)
+            patch = patches.PathPatch(path, facecolor="none", lw=1, zorder=0)
+            ax.add_patch(patch)
+
+        if save_file:
+            file_name = (
+                file_name
+                if file_name is not None
+                else f"{len(pos.keys())}_nodes_{len(routes)}_routes"
+            )
+            plt.savefig(
+                f"{file_name}.pdf",
+                bbox_inches="tight",
+                transparent=True,
+                pad_inches=0.1,
+            )
+
+        plt.show()

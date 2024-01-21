@@ -1,11 +1,11 @@
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 
 from problem.cvrp import CVRP
 
 
-def get_initial_solution(data: CVRP):
+def get_initial_solution(data: CVRP) -> Dict[int, List[int]]:
     """This heuristic finds the closest client iteratively"""
     open_clients = list(range(1, data.N + 1))  # from 1,..., N
     vehicles_ids = list(range(1, data.K + 1))  # from 1,..., K

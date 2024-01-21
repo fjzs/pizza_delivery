@@ -8,6 +8,7 @@ class SolverColumnGeneration:
     with a column generation approach
     """
 
-    def __init__(self, data: CVRP):
-        self.data = data
-        self.initial_solution = get_initial_solution(data)
+    def __init__(self, instance: CVRP):
+        self.instance = instance
+        self.initial_solution = get_initial_solution(instance)
+        instance.draw(self.initial_solution)
