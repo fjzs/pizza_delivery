@@ -15,23 +15,16 @@ def save_dictionary(data: dict, file_name: str, folder: str) -> None:
         print(f"\n{file_name} saved in {filepath}")
 
 
-def load_file(file_name: str, folder: str) -> dict:
+def load_file(filepath: str) -> dict:
     """Loads a file
 
     Args:
-        file_name (str): does not have extension
-        folder (str): folder where it lives
+        filepath (str):
 
     Returns:
         dict:
     """
-    assert "." not in file_name
     data = dict()
-    with open(os.path.join(folder, file_name + ".json")) as f:
+    with open(filepath) as f:
         data = json.load(f)
     return data
-
-
-if __name__ == "__main__":
-    d = load_file("01", "instances")
-    print(d)

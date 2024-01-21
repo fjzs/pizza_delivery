@@ -1,6 +1,6 @@
-from initial_solution import get_initial_solution
+from problem.cvrp import CVRP
 
-from cvrp.cvrp import CVRP
+from .initial_solution import get_initial_solution
 
 
 class SolverColumnGeneration:

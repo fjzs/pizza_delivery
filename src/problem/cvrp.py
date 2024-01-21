@@ -1,14 +1,15 @@
 import numpy as np
-from instance import load_instance
 from scipy.spatial.distance import cdist
+
+from problem import instance
 
 
 class CVRP:
     """This class has all the data for an instance of the Capacitated
     Vehicle Routing Problem, (but does not solve it)"""
 
-    def __init__(self, instance_name: str):
-        data = load_instance(instance_name)
+    def __init__(self, filepath: str):
+        data = instance.load(filepath)
         self.K = data["K"]  # number of vehicles
         self.Q = data["Q"]  # capacity of vehicles
         self.N = data["N"]  # number of clients (not considering depot)

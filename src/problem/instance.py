@@ -5,7 +5,6 @@ from utils import utils
 
 _RADIUS = 20  # radius from the depot (0,0) in 4 directions
 _DECIMALS = 0
-_FOLDER_INSTANCES = "instances"
 
 
 def create(
@@ -13,9 +12,9 @@ def create(
     num_vehicles: int,
     capacity: int,
     name: str,
+    folder: str,
     decimals=_DECIMALS,
     radius=_RADIUS,
-    folder=_FOLDER_INSTANCES,
 ):
     """Creates a CVRP instance and saves it. It starts to rotate around origin (0,0)
     with given radius and angle to create the required number of clients
@@ -63,13 +62,13 @@ def create(
     utils.save_dictionary(instance, name, folder)
 
 
-def load(instance_name: str) -> dict:
+def load(filepath: str) -> dict:
     """Loads an instance and returns the data of it
 
     Args:
-        instance_name (str):
+        filepath (str):
 
     Returns:
         (dict):
     """
-    return utils.load_file(instance_name, folder=_FOLDER_INSTANCES)
+    return utils.load_file(filepath)

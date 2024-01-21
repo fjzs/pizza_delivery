@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-from cvrp.cvrp import CVRP
+from problem.cvrp import CVRP
 
 
 def get_initial_solution(data: CVRP):

@@ -1,9 +1,14 @@
-from problem import instance
+import os
 
-FOLDER_INSTANCES = "instances"
+from problem.cvrp import CVRP
+from problem.instance import create
+from solver.column_generation.method import SolverColumnGeneration
+
+FOLDER_INSTANCES = ".\\src\\instances\\"
 
 
 if __name__ == "__main__":
-    instance.create(
-        num_clients=10, num_vehicles=5, capacity=10, name="02", folder=FOLDER_INSTANCES
-    )
+    instance = "01.json"
+    filepath = os.path.join(FOLDER_INSTANCES, instance)
+    data = CVRP(filepath)
+    solver = SolverColumnGeneration(data)
