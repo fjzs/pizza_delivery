@@ -55,10 +55,11 @@ class CVRP:
 
         # Plot the routes
         for route in routes.values():
-            verts = [pos[n] for n in route]
-            path = Path(verts)
-            patch = patches.PathPatch(path, facecolor="none", lw=1, zorder=0)
-            ax.add_patch(patch)
+            if len(route) > 0:
+                verts = [pos[n] for n in route]
+                path = Path(verts)
+                patch = patches.PathPatch(path, facecolor="none", lw=1, zorder=0)
+                ax.add_patch(patch)
 
         if save_file:
             file_name = (

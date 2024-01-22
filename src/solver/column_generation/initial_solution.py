@@ -6,7 +6,10 @@ from problem.cvrp import CVRP
 
 
 def get_initial_solution(data: CVRP) -> Dict[int, List[int]]:
-    """This heuristic finds the closest client iteratively"""
+    """This heuristic finds the closest client iteratively.
+    It provides at most 1 route for each vehicle in the dictionary.
+    It may not provide a route for every vehicle.
+    """
     open_clients = list(range(1, data.N + 1))  # from 1,..., N
     vehicles_ids = list(range(1, data.K + 1))  # from 1,..., K
     routes = dict()
