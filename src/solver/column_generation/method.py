@@ -16,5 +16,6 @@ class SolverColumnGeneration:
         # instance.draw(self.initial_solution)
 
         # Create the master problem and fill it with the initial solution
-        self.master = MasterProblem(self.instance.N)
+        self.master = MasterProblem(self.initial_solution)
         self.master.build_model()
+        self.master.get_duals()
