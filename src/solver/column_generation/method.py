@@ -3,6 +3,7 @@ from problem.solution import Solution
 
 from .initial_solution import get_initial_solution
 from .master_problem import MasterProblem
+from .pricing_problem import PricingProblem
 
 
 class SolverColumnGeneration:
@@ -18,4 +19,15 @@ class SolverColumnGeneration:
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.initial_solution)
         self.master.build_model()
-        self.master.get_duals()
+        duals = self.master.get_duals()
+
+        # Create the pricing problem
+        self.pricing = PricingProblem(
+            distances=self.instance.distance,
+            capacity=self.instance.Q,
+            demand=self.instance.demand,
+        )
+        self.pricing.set_duals(duals)
+        self.pricing.solve()
+
+        # COnsider Johnson or Bellman Ford for negative edges
