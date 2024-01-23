@@ -7,6 +7,7 @@ from matplotlib.path import Path
 from scipy.spatial.distance import cdist
 
 from problem import instance
+from problem.route import Route
 
 
 class CVRP:
@@ -23,6 +24,44 @@ class CVRP:
         self.distance = self._get_distances(self.coordinates)
         print(f"distances:\n{self.distance}")
         print(f"demand:\n{self.demand}")
+
+    def is_valid_route(self, r: Route) -> bool:
+        """Checks the validity of the route:
+        * Has to start at the depot
+        * Has to end at the depot
+        * The number of total nodes visited must be >= 3
+        * The clients (different than the depot) must be unique
+        * Total demand covered must be <= capacity
+
+        Args:
+            route (Route):
+
+        Returns:
+            bool: True if route is valid, Error if not
+        """
+        assert r is not None
+        assert len(r.nodes) >= 3  # depot -> client -> depot is the shortest
+        assert r.nodes[0] == 0  # start is the depot
+        assert r.nodes[-1] == 0  # end is the depot
+        demand_covered = sum([self.demand[i] for i in r.clients])
+        assert demand_covered <= self.Q  # constraint capacity
+        return True
+
+    def get_route_cost(self, r: Route) -> float:
+        """Compute the cost of a given route.
+
+        Args:
+            r (Route):
+
+        Returns:
+            cost(float):
+        """
+        cost = 0
+        i = r.nodes[0]
+        for j in r.nodes[1:]:
+            cost += self.distance[i, j]
+            i = j
+        return cost
 
     def _get_distances(self, points: np.ndarray, decimals=1) -> np.ndarray:
         """Computes the euclidean distances between each pair of points

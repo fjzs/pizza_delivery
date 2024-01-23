@@ -3,45 +3,56 @@ from typing import Dict, List
 import numpy as np
 
 from problem.cvrp import CVRP
+from problem.route import Route
+from problem.solution import Solution
 
 
-def get_initial_solution(data: CVRP) -> Dict[int, List[int]]:
+def get_initial_solution(data: CVRP) -> Solution:
     """This heuristic finds the closest client iteratively.
     It provides at most 1 route for each vehicle in the dictionary.
     It may not provide a route for every vehicle.
+
+    Args:
+        data (CVRP): instance
+
+    Returns:
+        Solution:
     """
     open_clients = list(range(1, data.N + 1))  # from 1,..., N
     vehicles_ids = list(range(1, data.K + 1))  # from 1,..., K
-    routes = dict()
+    routes: Dict[int, Route] = dict()
 
     for k in vehicles_ids:
-        route = []
+        nodes = []
 
         # Get a route for this vehicle
         if len(open_clients) > 0:
-            route = [0]  # start at the depot
+            nodes = [0]  # start at the depot
             capacity = data.Q
 
             # Look iterateviely for next closest client that fits in the vehicle
             while capacity > 0 and len(open_clients) > 0:
                 next_client = _get_closest_open_client(
-                    origin=route[-1],
+                    origin=nodes[-1],
                     open_clients=open_clients,
                     distances=data.distance,
                     capacity_left=capacity,
                     demand=data.demand,
                 )
-                route.append(next_client)
+                nodes.append(next_client)
                 capacity -= data.demand[next_client]
                 open_clients.remove(next_client)
 
             # there is no more capacity or clients left, close the route
-            route.append(0)
+            nodes.append(0)
+
+        # Create the route object
+        route = Route(nodes)
 
         # Add the route to the solution
         routes[k] = route
 
-    return routes
+    return Solution(data, routes)
 
 
 def _get_closest_open_client(

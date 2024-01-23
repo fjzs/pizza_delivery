@@ -1,6 +1,8 @@
 from problem.cvrp import CVRP
+from problem.solution import Solution
 
 from .initial_solution import get_initial_solution
+from .master_problem import MasterProblem
 
 
 class SolverColumnGeneration:
@@ -9,6 +11,10 @@ class SolverColumnGeneration:
     """
 
     def __init__(self, instance: CVRP):
-        self.instance = instance
-        self.initial_solution = get_initial_solution(instance)
-        instance.draw(self.initial_solution)
+        self.instance: CVRP = instance
+        self.initial_solution: Solution = get_initial_solution(instance)
+        # instance.draw(self.initial_solution)
+
+        # Create the master problem and fill it with the initial solution
+        self.master = MasterProblem(self.instance.N)
+        self.master.build_model()
