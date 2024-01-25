@@ -1,8 +1,6 @@
 from typing import Dict, List
 
 import numpy as np
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import dijkstra
 
 from .rcsp import RCSP
 
@@ -40,7 +38,13 @@ class PricingProblem:
         assert len(duals) == self.num_clients
         self.duals = duals
 
-    def solve(self):
+    def solve(self) -> tuple[float, List[int]]:
+        """Solves this problem with the goal of finding a reduced-cost
+        path
+
+        Returns:
+            tuple[float, List[int]]: cost, path
+        """
         # total number of nodes (0...n+1) the last one is the returning depot
         n = self.num_clients + 1
 
@@ -80,4 +84,6 @@ class PricingProblem:
         print(f"\ntimes:\n{times}")
 
         rcsp = RCSP(costs=cost, times=times, T=self.capacity, source=0, target=n)
-        rcsp.solve()
+        reduced_cost, path = rcsp.solve_enumeration()
+
+        return reduced_cost, path

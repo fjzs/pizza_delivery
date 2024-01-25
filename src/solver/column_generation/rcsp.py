@@ -1,3 +1,4 @@
+from itertools import combinations
 from typing import List, Set
 
 import gurobipy as gp
@@ -46,8 +47,7 @@ class RCSP:
         assert 0 <= target < N
         assert source != target
 
-        # Create optimization model
-        self.model = gp.Model("RCSP")
+        # Formulate optimization problem
         self.set_N = set(range(N))
         self.par_cost = costs
         self.set_A = self._get_set_arcs()
@@ -55,16 +55,31 @@ class RCSP:
         self.par_source = source
         self.par_target = target
         self.par_max_time = T
+
+    def solve_with_gurobi(self):
+        self.model = gp.Model("RCSP")
         self.var_X = self._add_var_X()
         self._add_constraint_net_flow()
         self._add_constraint_max_out_is_1()
         self._add_constraint_time()
+        # print(f"\n\nCONSTRAINTS:")
+        # for i, con in enumerate(self.model.getConstrs()):
+        #     print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
+
         self._set_objective_function()
         self.model.update()
 
-        print(f"\n\nCONSTRAINTS:")
-        for i, con in enumerate(self.model.getConstrs()):
-            print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
+        print("\n\n\nSOLVING RCSP\n")
+        self.model.optimize()
+
+        def remove_0_values(d: dict(), tolerance=float("1.0e-10")) -> dict():
+            return {str(k): v for (k, v) in d.items() if v > tolerance}
+
+        solution = None
+        if self.model.status == GRB.OPTIMAL:
+            objective_function_value = self.model.ObjVal
+            arcs_used = remove_0_values(self.model.getAttr("X", self.var_X))
+            print(arcs_used)
 
     def _get_set_arcs(self) -> Set[tuple[int, int]]:
         """Creates the set of arcs where the cost to travel is < ∞
@@ -140,15 +155,53 @@ class RCSP:
             sense=GRB.MINIMIZE,
         )
 
-    def solve(self):
-        print("\n\n\nSOLVING RCSP\n")
-        self.model.optimize()
+    def solve_enumeration(self) -> tuple[float, List[int]]:
+        """The enumeration procedure finds a solution of the type:
+        source -> M -> target, where M is a set of unique nodes different than {s, t}
 
-        def remove_0_values(d: dict(), tolerance=float("1.0e-10")) -> dict():
-            return {str(k): v for (k, v) in d.items() if v > tolerance}
+        Returns:
+            tuple[float, List[int]]: cost, path
+        """
+        # Add all the feasible paths here with its cost and set of node
+        solutions: List[float, List[int]] = []
+        M = list(self.set_N)
+        M.remove(self.par_source)
+        M.remove(self.par_target)
 
-        solution = None
-        if self.model.status == GRB.OPTIMAL:
-            objective_function_value = self.model.ObjVal
-            arcs_used = remove_0_values(self.model.getAttr("X", self.var_X))
-            print(arcs_used)
+        # Get all the routes of size 1,2,...,|M|
+        for i in range(1, len(M) + 1):
+            comb = combinations(M, i)
+            paths = [[self.par_source] + list(c) + [self.par_target] for c in comb]
+            for p in paths:
+                feasible, cost = self.evaluate_path(p)
+                if feasible:
+                    solutions.append((cost, p))
+
+        # Now sort them
+        solutions.sort()
+        print(
+            f"\nThe RCSP had {len(solutions)} feasible solutions. The best is: {solutions[0]}"
+        )
+        return solutions[0]
+
+    def evaluate_path(self, p: List[int]) -> tuple[bool, float]:
+        """Evaluates a path and returns if its feasible and its cost
+
+        Args:
+            p (List[int]): path
+
+        Returns:
+            tuple[bool, float]: feasible, cost
+        """
+        feasible = True
+        time = 0
+        cost = 0
+        i = p[0]
+        for j in p[1:]:
+            cost += self.par_cost[i, j]
+            time += self.par_time[i, j]
+            i = j
+            if time > self.par_max_time:
+                feasible = False
+                break
+        return feasible, cost

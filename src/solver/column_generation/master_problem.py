@@ -10,7 +10,11 @@ from problem.solution import Solution
 class MasterProblem:
     """
     This class has the responsibility of solving the linear Master Problem
-    and then to provide the dual variables.
+    and then to provide the dual variables. The Master Problem is:
+
+    # TODO write it
+
+
     """
 
     def __init__(self, solution: Solution):
@@ -23,6 +27,9 @@ class MasterProblem:
 
         # Define non-optimization attributes
         self.initial_solution: Solution = solution
+        self.instance = (
+            solution.instance
+        )  # TODO Fix this, dont use initial_solution.instance
         self.routes: Set[tuple[int, ...]] = set()
         """This is maintained to check quickly of duplicates, ex:
         {
@@ -98,45 +105,110 @@ class MasterProblem:
         else:
             print(f"route {nodes_tuple} is not unique")
 
-    def build_model(self):
-        """Rebuild the model with the updated routes"""
+    def build_model(self, linear: bool):
+        """Builds the model with the updated routes.
+
+        Args:
+            linear (bool): If true, then solve the linear version, otherwise
+            solve the MIP
+        """
         self.model = gp.Model("MasterProblem")
 
         # Add variables
         R = self.set_R
-        X = self.model.addVars(R, lb=0, ub=1, vtype=GRB.CONTINUOUS, name="X")
+        if linear:
+            self.var_X = self.model.addVars(
+                R, lb=0, ub=1, vtype=GRB.CONTINUOUS, name="X"
+            )
+        else:
+            self.var_X = self.model.addVars(R, lb=0, ub=1, vtype=GRB.BINARY, name="X")
 
         # Add constraints
+        # TODO put constraints in methods
+        # TODO test putting the vehicle constraint in the linear formulation
         N = self.set_N
-        self.constraints = self.model.addConstrs(
-            (
-                (gp.quicksum(X[r] for r in self.par_routes_per_client[i]) >= 1.0)
-                for i in N
-            ),
-            name="serve_client",
-        )
+        if linear:
+            # Serve each client
+            self.constraints = self.model.addConstrs(
+                (
+                    (
+                        gp.quicksum(
+                            self.var_X[r] for r in self.par_routes_per_client[i]
+                        )
+                        >= 1.0
+                    )
+                    for i in N
+                ),
+                name="serve_client",
+            )
+        else:
+            # Server each client once
+            self.model.addConstrs(
+                (
+                    (
+                        gp.quicksum(
+                            self.var_X[r] for r in self.par_routes_per_client[i]
+                        )
+                        == 1.0
+                    )
+                    for i in N
+                ),
+                name="serve_client",
+            )
+
+            # Use at most K vehicles
+            self.model.addConstr(
+                gp.quicksum(self.var_X[r] for r in R) <= self.instance.K,
+                name="vehicles_limit",
+            )
 
         # Objective function
         self.model.setObjective(
-            gp.quicksum(X[r] * self.par_cost_per_route[r] for r in R),
+            gp.quicksum(self.var_X[r] * self.par_cost_per_route[r] for r in R),
             sense=GRB.MINIMIZE,
         )
 
         # Update the model after the creation
         self.model.update()
-        print(f"\n\nCONSTRAINTS:")
-        for i, con in enumerate(self.model.getConstrs()):
-            print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
+        # print(f"\n\nCONSTRAINTS:")
+        # for i, con in enumerate(self.model.getConstrs()):
+        #     print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
+
+    def solve(self):
+        """Solves the master problem"""
+        self.model.optimize()
+
+    def get_solution(self) -> Solution:
+        """Get the solution after solving the integer problem
+
+        Returns:
+            Solution:
+        """
+
+        def remove_0_values(d: dict(), tolerance=float("1.0e-10")) -> dict():
+            return {k: v for (k, v) in d.items() if v > tolerance}
+
+        routes_ids_used = remove_0_values(self.model.getAttr("X", self.var_X))
+        routes_solution: Dict[int, Route] = dict()
+        for i, r_id in enumerate(routes_ids_used):
+            clients_of_route = self.clients_per_route[r_id]
+            nodes = [0] + list(clients_of_route) + [0]
+            routes_solution[i] = Route(nodes)
+
+        solution = Solution(
+            instance=self.initial_solution.instance, routes=routes_solution
+        )
+        return solution
 
     def get_duals(self) -> Dict[int, float]:
-        """Retrieves the shadow prices associated to the primal constraint
+        """Solves the linear relaxation of the Master Problem and
+        retrieves the shadow prices associated to the primal constraint
         of client service.
 
         Returns:
             client_dual (Dict[int, float]): client id -> shadow price
         """
 
-        self.model.optimize()
         # self.model.display()
 
         # https://www.gurobi.com/documentation/9.5/refman/pi.html
