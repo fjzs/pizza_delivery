@@ -16,12 +16,12 @@ class CVRP:
 
     def __init__(self, filepath: str):
         data = instance.load(filepath)
-        self.K = data["K"]  # number of vehicles
-        self.Q = data["Q"]  # capacity of vehicles
-        self.N = data["N"]  # number of clients (not considering depot)
-        self.demand = data["demand"]  # demand of each node
-        self.coordinates = np.asarray(data["coordinates"])
-        self.distance = self._get_distances(self.coordinates)
+        self.K: int = data["K"]  # number of vehicles
+        self.Q: int = data["Q"]  # capacity of vehicles
+        self.N: int = data["N"]  # number of clients (not considering depot)
+        self.demand: List[int] = data["demand"]  # demand of each node
+        self.coordinates: np.ndarray = np.asarray(data["coordinates"])
+        self.distance: np.ndarray = self._get_distances(self.coordinates)
         print(f"distances:\n{self.distance}")
         print(f"demand:\n{self.demand}")
 
@@ -81,9 +81,13 @@ class CVRP:
         assert np.all(distances >= 0)
         return distances
 
-    def draw(self, routes: Dict[int, List[int]], save_file=False, file_name=None):
+    def draw(
+        self, routes: Dict[int, Route], title: str, save_file=False, file_name=None
+    ):
         fig, ax = plt.subplots()
         pos = self.coordinates
+
+        plt.title(title)
 
         # Plot nodes ids
         for i in range(self.N + 1):
@@ -94,8 +98,8 @@ class CVRP:
 
         # Plot the routes
         for route in routes.values():
-            if len(route) > 0:
-                verts = [pos[n] for n in route]
+            if len(route.nodes) > 0:
+                verts = [pos[n] for n in route.nodes]
                 path = Path(verts)
                 patch = patches.PathPatch(path, facecolor="none", lw=1, zorder=0)
                 ax.add_patch(patch)
@@ -107,9 +111,8 @@ class CVRP:
                 else f"{len(pos.keys())}_nodes_{len(routes)}_routes"
             )
             plt.savefig(
-                f"{file_name}.pdf",
+                f"{file_name}.png",
                 bbox_inches="tight",
-                transparent=True,
                 pad_inches=0.1,
             )
 

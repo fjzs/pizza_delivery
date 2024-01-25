@@ -1,4 +1,4 @@
-from problem.cvrp import CVRP
+from problem.cvrp import CVRP, Route
 from problem.solution import Solution
 
 from .initial_solution import get_initial_solution
@@ -13,8 +13,27 @@ class SolverColumnGeneration:
 
     def __init__(self, instance: CVRP):
         self.instance: CVRP = instance
-        self.initial_solution: Solution = get_initial_solution(instance)
-        # instance.draw(self.initial_solution)
+        self.initial_solution: Solution = None
+
+        # heuristic solution
+        # self.initial_solution = get_initial_solution(instance)
+        # instance.draw(
+        #     self.initial_solution.routes,
+        #     title="Heuristic Initial Solution",
+        #     save_file=True,
+        #     file_name="heuristic",
+        # )
+
+        # bad solution
+        r1 = Route([0, 2, 4, 0])
+        r2 = Route([0, 5, 3, 1, 0])
+        self.initial_solution = Solution(instance, {1: r1, 2: r2})
+        instance.draw(
+            self.initial_solution.routes,
+            title="Bad Initial Solution",
+            save_file=True,
+            file_name="bad",
+        )
 
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.initial_solution)
@@ -29,5 +48,3 @@ class SolverColumnGeneration:
         )
         self.pricing.set_duals(duals)
         self.pricing.solve()
-
-        # COnsider Johnson or Bellman Ford for negative edges
