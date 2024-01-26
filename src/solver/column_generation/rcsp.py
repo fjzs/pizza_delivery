@@ -155,12 +155,18 @@ class RCSP:
             sense=GRB.MINIMIZE,
         )
 
-    def solve_enumeration(self) -> tuple[float, List[int]]:
-        """The enumeration procedure finds a solution of the type:
-        source -> M -> target, where M is a set of unique nodes different than {s, t}
+    def solve_enumeration(
+        self, vehicle_cap_dual: float
+    ) -> List[tuple[float, List[int]]]:
+        """The enumeration procedure finds solutions of the type:
+        source -> M -> target, where M is a set of unique nodes different than {s, t},
+        such that the solution is feasible and the cost is < 0.
+
+        Args:
+            vehicle_cap_dual (float):
 
         Returns:
-            tuple[float, List[int]]: cost, path
+            solutions (List[float, List[int]]): list of (cost, path)
         """
         # Add all the feasible paths here with its cost and set of node
         solutions: List[float, List[int]] = []
@@ -173,29 +179,27 @@ class RCSP:
             comb = combinations(M, i)
             paths = [[self.par_source] + list(c) + [self.par_target] for c in comb]
             for p in paths:
-                feasible, cost = self.evaluate_path(p)
-                if feasible:
+                feasible, cost = self.evaluate_path(p, vehicle_cap_dual)
+                if feasible and cost < 0:
                     solutions.append((cost, p))
 
-        # Now sort them
-        solutions.sort()
-        print(
-            f"\nThe RCSP had {len(solutions)} feasible solutions. The best is: {solutions[0]}"
-        )
-        return solutions[0]
+        return solutions
 
-    def evaluate_path(self, p: List[int]) -> tuple[bool, float]:
+    def evaluate_path(
+        self, p: List[int], vehicle_cap_dual: float
+    ) -> tuple[bool, float]:
         """Evaluates a path and returns if its feasible and its cost
 
         Args:
             p (List[int]): path
+            vehicle_cap_dual (float):
 
         Returns:
             tuple[bool, float]: feasible, cost
         """
         feasible = True
         time = 0
-        cost = 0
+        cost = -vehicle_cap_dual
         i = p[0]
         for j in p[1:]:
             cost += self.par_cost[i, j]

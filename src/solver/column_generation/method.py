@@ -19,7 +19,7 @@ class SolverColumnGeneration:
         # self.initial_solution = get_initial_solution(instance)
         # instance.draw(
         #     self.initial_solution.routes,
-        #     title="Heuristic Initial Solution",
+        #     title=f"Heuristic Solution Z={self.initial_solution.total_cost}",
         #     save_file=True,
         #     file_name="heuristic",
         # )
@@ -28,12 +28,12 @@ class SolverColumnGeneration:
         r1 = Route([0, 2, 4, 0])
         r2 = Route([0, 5, 3, 1, 0])
         self.initial_solution = Solution(instance, {1: r1, 2: r2})
-        # instance.draw(
-        #     self.initial_solution.routes,
-        #     title="Bad Initial Solution",
-        #     save_file=True,
-        #     file_name="bad",
-        # )
+        instance.draw(
+            self.initial_solution.routes,
+            title=f"Bad Initial Solution Z={self.initial_solution.total_cost}",
+            save_file=True,
+            file_name="bad",
+        )
 
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.initial_solution)
@@ -46,36 +46,37 @@ class SolverColumnGeneration:
         )
 
         for i in range(max_iterations):
-            print(f"It: {i+1}")
+            print(f"\nMASTER ITERATION: {i+1} -------------------\n")
 
             # Get the duals
-            self.master.build_model(linear=True)
+            self.master.build_model(is_linear=True)
             self.master.solve()
-            duals = self.master.get_duals()
-            self.pricing.set_duals(duals)
+            client_duals, vehicle_cap_dual = self.master.get_duals()
+            self.pricing.set_duals(client_duals, vehicle_cap_dual)
 
             # Find a negative reduced-cost path
-            reduced_cost, path = self.pricing.solve()
-            print("Pricing problem:")
-            print(f"\tmin reduced-cost: {reduced_cost}")
-            print(f"\tbest path: {path}")
-
-            if reduced_cost < 0:
-                # add route to the master problem
-                path[-1] = 0  # replace the last virtual node with the actual depot
-                route = Route(path)
-                self.instance.is_valid_route(route)
-                cost = self.instance.get_route_cost(route)
-                self.master.add_route(route, cost)
+            cost_path_solutions = self.pricing.solve()
+            if len(cost_path_solutions) > 0:
+                print("\n Results of Pricing Problem:")
+                for i, (reduced_cost, path) in enumerate(cost_path_solutions):
+                    print(f"\t {i+1}: red-cost: {reduced_cost} path: {path}")
+                    # add route to the master problem
+                    path[-1] = 0  # replace the last virtual node with the actual depot
+                    route = Route(path)
+                    self.instance.is_valid_route(route)
+                    cost = self.instance.get_route_cost(route)
+                    self.master.add_route(route, cost)
             else:
                 break
 
+        print(f"\nCOLUMN GENERATION ENDED!!!")
+
         print(f"Now solving the MIP Master:")
-        self.master.build_model(linear=False)
+        self.master.build_model(is_linear=False)
         self.master.solve()
         final_solution: Solution = self.master.get_solution()
         instance.draw(
-            self.initial_solution.routes,
+            final_solution.routes,
             title=f"Final Solution Z={final_solution.total_cost}",
             save_file=True,
             file_name="final",

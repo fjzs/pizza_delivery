@@ -26,24 +26,28 @@ class PricingProblem:
         self.capacity: float = capacity
         self.num_clients: int = len(distances) - 1
         self.demand: List[int] = demand
-        self.duals: Dict[int, float] = dict()  # client -> dual
+        self.client_duals: Dict[int, float] = dict()
+        self.vehicle_cap_dual: float = 0
 
-    def set_duals(self, duals: Dict[int, float]):
-        """Set the shadow prices of each client
+    def set_duals(self, client_duals: Dict[int, float], vehicle_cap_dual: float):
+        """Set the shadow prices of each client and the vehicle cap
 
         Args:
             duals (Dict[int, float]):
         """
-        assert duals is not None
-        assert len(duals) == self.num_clients
-        self.duals = duals
+        assert client_duals is not None
+        assert vehicle_cap_dual is not None
+        assert len(client_duals) == self.num_clients
+        assert isinstance(vehicle_cap_dual, float)
+        self.client_duals = client_duals
+        self.vehicle_cap_dual = vehicle_cap_dual
 
-    def solve(self) -> tuple[float, List[int]]:
-        """Solves this problem with the goal of finding a reduced-cost
-        path
+    def solve(self) -> List[tuple[float, List[int]]]:
+        """Solves this problem with the goal of finding reduced-cost
+        paths
 
         Returns:
-            tuple[float, List[int]]: cost, path
+            solutions (List[tuple[float, List[int]]]): List of (reduced_cost, path)
         """
         # total number of nodes (0...n+1) the last one is the returning depot
         n = self.num_clients + 1
@@ -65,7 +69,7 @@ class PricingProblem:
         # reduced_c_ij = c_ij - pi_i (this is the dual)
         # duals of each node [0, lambda_1, lambda_2, ..., lambda_n, 0]
         duals_col = np.zeros((n + 1, 1))
-        for id_client, dual_value in self.duals.items():
+        for id_client, dual_value in self.client_duals.items():
             duals_col[id_client, 0] = dual_value
         print(f"duals_col:\n{duals_col}")
         print(f"\ncost before duals:\n{cost}")
@@ -84,6 +88,5 @@ class PricingProblem:
         print(f"\ntimes:\n{times}")
 
         rcsp = RCSP(costs=cost, times=times, T=self.capacity, source=0, target=n)
-        reduced_cost, path = rcsp.solve_enumeration()
-
-        return reduced_cost, path
+        cost_path_solutions = rcsp.solve_enumeration(self.vehicle_cap_dual)
+        return cost_path_solutions
