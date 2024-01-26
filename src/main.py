@@ -5,10 +5,11 @@ from problem.instance import create
 from solver.column_generation.method import SolverColumnGeneration
 
 FOLDER_INSTANCES = ".\\src\\instances\\"
+FOLDER_SOLUTIONS = ".\\src\\solutions\\"
 
 
 if __name__ == "__main__":
-    instance = "01.json"
+    instance = "02.json"
     filepath = os.path.join(FOLDER_INSTANCES, instance)
     data = CVRP(filepath)
     solver = SolverColumnGeneration(data)

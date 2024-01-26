@@ -45,12 +45,9 @@ def get_initial_solution(data: CVRP) -> Solution:
 
             # there is no more capacity or clients left, close the route
             nodes.append(0)
-
-        # Create the route object
-        route = Route(nodes)
-
-        # Add the route to the solution
-        routes[k] = route
+            route = Route(nodes)
+            # Add the route to the solution
+            routes[k] = route
 
     return Solution(data, routes)
 

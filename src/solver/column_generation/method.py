@@ -16,24 +16,24 @@ class SolverColumnGeneration:
         self.initial_solution: Solution = None
 
         # heuristic solution
-        # self.initial_solution = get_initial_solution(instance)
-        # instance.draw(
-        #     self.initial_solution.routes,
-        #     title=f"Heuristic Solution Z={self.initial_solution.total_cost}",
-        #     save_file=True,
-        #     file_name="heuristic",
-        # )
-
-        # bad solution
-        r1 = Route([0, 2, 4, 0])
-        r2 = Route([0, 5, 3, 1, 0])
-        self.initial_solution = Solution(instance, {1: r1, 2: r2})
+        self.initial_solution = get_initial_solution(instance)
         instance.draw(
             self.initial_solution.routes,
-            title=f"Bad Initial Solution Z={self.initial_solution.total_cost}",
+            title=f"Heuristic Solution Z={self.initial_solution.total_cost}",
             save_file=True,
-            file_name="bad",
+            file_name="heuristic",
         )
+
+        # bad solution
+        # r1 = Route([0, 2, 4, 0])
+        # r2 = Route([0, 5, 3, 1, 0])
+        # self.initial_solution = Solution(instance, {1: r1, 2: r2})
+        # instance.draw(
+        #     self.initial_solution.routes,
+        #     title=f"Bad Initial Solution Z={self.initial_solution.total_cost}",
+        #     save_file=True,
+        #     file_name="bad",
+        # )
 
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.initial_solution)
