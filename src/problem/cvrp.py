@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List
 
 import matplotlib.patches as patches
@@ -82,8 +83,16 @@ class CVRP:
         return distances
 
     def draw(
-        self, routes: Dict[int, Route], title: str, save_file=False, file_name=None
+        self, routes: Dict[int, Route], title: str, filename: str, folder_to_save: str
     ):
+        """Draw a set of routes
+
+        Args:
+            routes (Dict[int, Route]):
+            title (str):
+            filename (str):
+            folder_to_save (str):
+        """
         fig, ax = plt.subplots()
         pos = self.coordinates
 
@@ -92,9 +101,9 @@ class CVRP:
         # Plot nodes ids
         for i in range(self.N + 1):
             x, y = self.coordinates[i, :]
-            color = "red" if i == 0 else "blue"
-            ax.scatter(x, y, s=200, color=color)
-            plt.annotate(str(i), (x - 0.3, y - 0.35), color="white", size=10)
+            color = "black"
+            ax.scatter(x, y, s=200, color=color)  # circle
+            plt.annotate(str(i), (x - 0.3, y - 0.35), color="white", size=10)  # id
 
         # Plot the routes
         for route in routes.values():
@@ -104,16 +113,7 @@ class CVRP:
                 patch = patches.PathPatch(path, facecolor="none", lw=1, zorder=0)
                 ax.add_patch(patch)
 
-        if save_file:
-            file_name = (
-                file_name
-                if file_name is not None
-                else f"{len(pos.keys())}_nodes_{len(routes)}_routes"
-            )
-            plt.savefig(
-                f"{file_name}.png",
-                bbox_inches="tight",
-                pad_inches=0.1,
-            )
-
-        plt.show()
+        # Save the fig
+        filepath = os.path.join(folder_to_save, filename) + ".png"
+        plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
+        print(f"Saved {filepath}")

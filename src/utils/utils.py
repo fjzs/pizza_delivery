@@ -7,6 +7,8 @@ def save_dictionary(data: dict, file_name: str, folder: str) -> None:
 
     Args:
         data (dict):
+        file_name (str):
+        folder (str):
     """
     filepath = os.path.join(folder, file_name + ".json")
 

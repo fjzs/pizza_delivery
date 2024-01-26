@@ -11,7 +11,19 @@ class SolverColumnGeneration:
     with a column generation approach
     """
 
-    def __init__(self, instance: CVRP, max_iterations: int = 10):
+    def __init__(
+        self,
+        instance: CVRP,
+        folder: str,
+        max_iterations: int = 10,
+    ):
+        """Initializes the solver
+
+        Args:
+            instance (CVRP): data for the problem
+            folder (str): folder to save results
+            max_iterations (int, optional): Max iterations to run column generation
+        """
         self.instance: CVRP = instance
         self.initial_solution: Solution = None
 
@@ -19,9 +31,9 @@ class SolverColumnGeneration:
         self.initial_solution = get_initial_solution(instance)
         instance.draw(
             self.initial_solution.routes,
-            title=f"Heuristic Solution Z={self.initial_solution.total_cost}",
-            save_file=True,
-            file_name="heuristic",
+            title=f"Heuristic Cost={round(self.initial_solution.total_cost)}",
+            filename="heuristic",
+            folder_to_save=folder,
         )
 
         # bad solution
@@ -76,8 +88,8 @@ class SolverColumnGeneration:
         self.master.solve()
         final_solution: Solution = self.master.get_solution()
         instance.draw(
-            final_solution.routes,
+            routes=final_solution.routes,
             title=f"Final Solution Z={final_solution.total_cost}",
-            save_file=True,
-            file_name="final",
+            filename="final",
+            folder_to_save=folder,
         )

@@ -1,10 +1,10 @@
+import os
+import random
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 from utils import utils
-
-_RADIUS = 20  # radius from the depot (0,0) in 4 directions
-_DECIMALS = 0
 
 
 def create(
@@ -13,16 +13,17 @@ def create(
     capacity: int,
     name: str,
     folder: str,
-    decimals=_DECIMALS,
-    radius=_RADIUS,
+    radius: int,
 ):
-    """Creates a CVRP instance and saves it. It starts to rotate around origin (0,0)
-    with given radius and angle to create the required number of clients
+    """Creates a CVRP instance and saves it.
 
     Args:
-        num_clients (int): number of clients without considering the depot
+        num_clients (int):
         num_vehicles (int):
         capacity (int):
+        name (str):
+        folder (str):
+        radius (int): value to create a square with the origin in the middle
     """
 
     assert num_clients >= 1
@@ -34,17 +35,23 @@ def create(
     instance["N"] = num_clients
     instance["Q"] = capacity
 
-    # Fill the coordinates randomly
-    random_u = np.random.rand(num_clients + 1, 2)
-    xy = np.ones((num_clients + 1, 2)) * -radius
-    xy = xy + 2 * radius * random_u
+    # Compute all the points in a cartesian grid and then pick
+    # some of them randomly
+    x = list(range(-radius, radius + 1, 1))
+    y = list(range(-radius, radius + 1, 1))
+    pos = []
+    for i in x:
+        for j in y:
+            if abs(i) + abs(j) != 0:  # avoid the origin
+                pos.append((i, j))
+    random.shuffle(pos)
 
+    # xy is a np.ndarray of shape n+1 rows and 2 columns
+    xy = np.zeros((num_clients + 1, 2))
     # The first row is the depot at the origin
-    xy[0, :] = 0
-
-    # Round the positions
-    xy = np.round(xy, decimals=decimals)
-    print(xy)
+    for i in range(num_clients):
+        xy[i + 1][0] = int(pos[i][0])  # x
+        xy[i + 1][1] = int(pos[i][1])  # y
 
     # Add it to the instance
     instance["coordinates"] = xy.tolist()
@@ -54,12 +61,21 @@ def create(
     demands[0] = 0  # the demand of the depot is 0
     instance["demand"] = demands
 
-    # Plot it to check if its fine
-    plt.scatter(xy[:, 0], xy[:, 1])
-    plt.show()
+    # Folder of this instance
+    folder_instance = os.path.join(folder, name)
+    if not os.path.exists(folder_instance):
+        os.makedirs(folder_instance)
 
-    # Save the instance
-    utils.save_dictionary(instance, name, folder)
+    # Plot it and save the figure to inspect it
+    plt.scatter(xy[:, 0], xy[:, 1])
+    plt.savefig(
+        os.path.join(folder_instance, "map.png"),
+        bbox_inches="tight",
+        pad_inches=0.1,
+    )
+
+    # Save the instance file
+    utils.save_dictionary(data=instance, file_name=name, folder=folder_instance)
 
 
 def load(filepath: str) -> dict:

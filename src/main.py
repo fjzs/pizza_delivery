@@ -5,11 +5,22 @@ from problem.instance import create
 from solver.column_generation.method import SolverColumnGeneration
 
 FOLDER_INSTANCES = ".\\src\\instances\\"
-FOLDER_SOLUTIONS = ".\\src\\solutions\\"
 
 
 if __name__ == "__main__":
-    instance = "02.json"
-    filepath = os.path.join(FOLDER_INSTANCES, instance)
+    # Create a new instance
+    # create(
+    #     num_clients=30,
+    #     num_vehicles=6,
+    #     capacity=6,
+    #     name="03",
+    #     folder=FOLDER_INSTANCES,
+    #     radius=50,
+    # )
+
+    # Solve
+    instance = "03"
+    instance_folder = os.path.join(FOLDER_INSTANCES, instance)
+    filepath = os.path.join(instance_folder, instance) + ".json"
     data = CVRP(filepath)
-    solver = SolverColumnGeneration(data)
+    solver = SolverColumnGeneration(instance=data, folder=instance_folder)
