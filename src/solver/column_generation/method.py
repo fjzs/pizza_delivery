@@ -58,7 +58,10 @@ class SolverColumnGeneration:
         )
 
         for i in range(max_iterations):
-            print(f"\nMASTER ITERATION: {i+1} -------------------\n")
+            print(
+                f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n"
+            )
+            print(f"Master has: {len(self.master.routes)} unique routes")
 
             # Get the duals
             self.master.build_model(is_linear=True)
@@ -67,6 +70,7 @@ class SolverColumnGeneration:
             self.pricing.set_duals(client_duals, vehicle_cap_dual)
 
             # Find a negative reduced-cost path
+            print(f"\nSolving the pricing problem...")
             cost_path_solutions = self.pricing.solve()
             if len(cost_path_solutions) > 0:
                 print("\n Results of Pricing Problem:")
@@ -89,7 +93,7 @@ class SolverColumnGeneration:
         final_solution: Solution = self.master.get_solution()
         instance.draw(
             routes=final_solution.routes,
-            title=f"Final Solution Z={final_solution.total_cost}",
+            title=f"Final Cost={round(final_solution.total_cost)}",
             filename="final",
             folder_to_save=folder,
         )

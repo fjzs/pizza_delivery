@@ -156,7 +156,7 @@ class RCSP:
         )
 
     def solve_enumeration(
-        self, vehicle_cap_dual: float
+        self, vehicle_cap_dual: float, max_clients_in_route: int, max_num_solutions: int
     ) -> List[tuple[float, List[int]]]:
         """The enumeration procedure finds solutions of the type:
         source -> M -> target, where M is a set of unique nodes different than {s, t},
@@ -164,18 +164,24 @@ class RCSP:
 
         Args:
             vehicle_cap_dual (float):
+            max_clients_in_route (int):
+            max_num_solutions (int)
 
         Returns:
             solutions (List[float, List[int]]): list of (cost, path)
         """
+        assert max_clients_in_route > 0
+        assert max_num_solutions > 0
+
         # Add all the feasible paths here with its cost and set of node
         solutions: List[float, List[int]] = []
         M = list(self.set_N)
         M.remove(self.par_source)
         M.remove(self.par_target)
 
-        # Get all the routes of size 1,2,...,|M|
-        for i in range(1, len(M) + 1):
+        # Get all the routes of size 1, 2, ..., max_clients_in_route
+        for i in range(1, max_clients_in_route + 1):
+            print(f"\tAnalyzing combinations C({len(M)},{i})")
             comb = combinations(M, i)
             paths = [[self.par_source] + list(c) + [self.par_target] for c in comb]
             for p in paths:
@@ -183,7 +189,8 @@ class RCSP:
                 if feasible and cost < 0:
                     solutions.append((cost, p))
 
-        return solutions
+        solutions.sort()
+        return solutions[0 : min(len(solutions), max_num_solutions)]
 
     def evaluate_path(
         self, p: List[int], vehicle_cap_dual: float

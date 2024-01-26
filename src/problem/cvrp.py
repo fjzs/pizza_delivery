@@ -23,8 +23,8 @@ class CVRP:
         self.demand: List[int] = data["demand"]  # demand of each node
         self.coordinates: np.ndarray = np.asarray(data["coordinates"])
         self.distance: np.ndarray = self._get_distances(self.coordinates)
-        print(f"distances:\n{self.distance}")
-        print(f"demand:\n{self.demand}")
+        # print(f"distances:\n{self.distance}")
+        # print(f"demand:\n{self.demand}")
 
     def is_valid_route(self, r: Route) -> bool:
         """Checks the validity of the route:
@@ -103,14 +103,22 @@ class CVRP:
             x, y = self.coordinates[i, :]
             color = "black"
             ax.scatter(x, y, s=200, color=color)  # circle
-            plt.annotate(str(i), (x - 0.3, y - 0.35), color="white", size=10)  # id
+            x_displacement = -1 if i < 10 else -2
+            plt.annotate(
+                str(i), (x + x_displacement, y - 1), color="white", size=10
+            )  # id
 
         # Plot the routes
-        for route in routes.values():
+        route_color = ["b", "g", "r", "c", "m", "k"]
+
+        for index, route in enumerate(routes.values()):
             if len(route.nodes) > 0:
+                col = route_color[index]
                 verts = [pos[n] for n in route.nodes]
                 path = Path(verts)
-                patch = patches.PathPatch(path, facecolor="none", lw=1, zorder=0)
+                patch = patches.PathPatch(
+                    path, facecolor="none", lw=1, zorder=0, edgecolor=col
+                )
                 ax.add_patch(patch)
 
         # Save the fig

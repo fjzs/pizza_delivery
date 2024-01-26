@@ -245,11 +245,11 @@ class MasterProblem:
         # https://support.gurobi.com/hc/en-us/community/posts/15340462880785-How-to-retrieve-the-dual-variable-value-for-a-linear-constraint-in-a-SOCP-problem
         client_dual: Dict[int, float] = dict()
         for client_id, c in self.con_serve_clients.items():
-            print(f"client id: {client_id}, dual: {c.Pi}")
+            # print(f"client id: {client_id}, dual: {c.Pi}")
             client_dual[client_id] = c.Pi
 
         vehicle_cap_dual = self.con_vehicle_limit.Pi
-        print(f"vehicle cap dual: {vehicle_cap_dual}")
+        # print(f"vehicle cap dual: {vehicle_cap_dual}")
 
         assert len(client_dual) == len(self.set_N)
         return client_dual, vehicle_cap_dual

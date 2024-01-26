@@ -4,6 +4,8 @@ import numpy as np
 
 from .rcsp import RCSP
 
+_MAX_NUM_SOLUTIONS = 100
+
 
 class PricingProblem:
     """
@@ -71,12 +73,12 @@ class PricingProblem:
         duals_col = np.zeros((n + 1, 1))
         for id_client, dual_value in self.client_duals.items():
             duals_col[id_client, 0] = dual_value
-        print(f"duals_col:\n{duals_col}")
-        print(f"\ncost before duals:\n{cost}")
+        # print(f"duals_col:\n{duals_col}")
+        # print(f"\ncost before duals:\n{cost}")
         cost -= duals_col
         # From node i you cant go to node i
         np.fill_diagonal(cost, np.inf)
-        print(f"\ncost after duals:\n{cost}")
+        # print(f"\ncost after duals:\n{cost}")
 
         # Resources (demand of each client)
         times = np.zeros((n + 1, n + 1))
@@ -85,8 +87,12 @@ class PricingProblem:
         times += demands
         # From node i you cant go to node i
         np.fill_diagonal(times, np.inf)
-        print(f"\ntimes:\n{times}")
+        # print(f"\ntimes:\n{times}")
 
         rcsp = RCSP(costs=cost, times=times, T=self.capacity, source=0, target=n)
-        cost_path_solutions = rcsp.solve_enumeration(self.vehicle_cap_dual)
+        cost_path_solutions = rcsp.solve_enumeration(
+            vehicle_cap_dual=self.vehicle_cap_dual,
+            max_clients_in_route=self.capacity,
+            max_num_solutions=_MAX_NUM_SOLUTIONS,
+        )
         return cost_path_solutions
