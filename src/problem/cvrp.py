@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.path import Path
 from scipy.spatial.distance import cdist
+import matplotlib.colors as mcolors
 
 from problem import instance
 from problem.route import Route
@@ -111,7 +112,6 @@ class CVRP:
         """
         fig, ax = plt.subplots()
         pos = self.coordinates
-
         plt.title(title)
 
         # Plot nodes ids
@@ -126,11 +126,14 @@ class CVRP:
             )  # id
 
         # Plot the routes
-        route_color = ["b", "g", "r", "c", "m", "k"]
+        colormap = plt.cm.viridis
+        route_ids = routes.keys()
+        norm = mcolors.Normalize(vmin = min(route_ids), vmax = max(route_ids))
+        colors = {id: colormap(norm(id)) for id in route_ids} # Get a unique color for each route_id        
 
-        for index, route in enumerate(routes.values()):
+        for id, route in routes.items():
             if len(route.nodes) > 0:
-                col = route_color[index]
+                col = colors[id]
                 verts = [pos[n] for n in route.nodes]
                 path = Path(verts)
                 patch = patches.PathPatch(
