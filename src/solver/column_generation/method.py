@@ -15,7 +15,7 @@ class SolverColumnGeneration:
         self,
         instance: CVRP,
         folder: str,
-        max_iterations: int = 10,
+        max_iterations: int,
     ):
         """Initializes the solver
 
@@ -84,10 +84,10 @@ class SolverColumnGeneration:
                     self.master.add_route(route, cost)
                     print(f"\t {i+1}: red-cost: {reduced_cost} path: {path}, cost: {cost}")
             else:
-                print(f"No reduced-cost routes found! Ending Column Generation...")
+                print(f"\nNo reduced-cost routes found! Ending Column Generation...")
                 break
 
-        print(f"\nCOLUMN GENERATION ENDED!!!")
+        print(f"\n\nCOLUMN GENERATION ENDED!!!")
 
         print(f"Now solving the MIP Master:")
         self.master.build_model(is_linear=False)

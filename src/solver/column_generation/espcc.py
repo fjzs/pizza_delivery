@@ -136,10 +136,10 @@ class ESPCC:
         algorithm = BiDirectional(G=G, max_res=[self.T, self.T], min_res=[0, 0], elementary=True)
         algorithm.run()
         path = algorithm.path
-        print(f"Bidirectional algorithm result:")
+        print(f"\nBidirectional algorithm result:")
         print(f"\tpath: {path}")
-        print(f"\tcost: {algorithm.total_cost}")
-        print(f"\tconsumed resources: {algorithm.consumed_resources}")
+        print(f"\treduced-cost: {algorithm.total_cost}")
+        print(f"\tconsumed resources: {algorithm.consumed_resources[1]}")
         if path[0] == "Source" and path[-1] == "Sink":
             path[0] = 0 # this is the depot
             path[-1] = self.N-1 # this is the virtual depot

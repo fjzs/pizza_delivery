@@ -93,13 +93,20 @@ class PricingProblem:
         np.fill_diagonal(times, np.inf)
         print(f"\ntimes:\n{times}")
 
-
         elementary_path_problem = ESPCC(costs=cost, times=times, T=self.capacity, source=0, target=n)
+        
+        # # Enumeration approach
+        # cost_path_solutions = elementary_path_problem.solve(
+        #     method="enumeration",
+        #     max_num_solutions=_MAX_NUM_SOLUTIONS,
+        #     max_clients_per_path= self.max_clients_per_route
+        # )
+        
+        # Exact but faster approach
         cost_path_solutions = elementary_path_problem.solve(
-            method="enumeration",
-            max_num_solutions=_MAX_NUM_SOLUTIONS,
+            method="bidirectional",
+            max_num_solutions = 1,
             max_clients_per_path= self.max_clients_per_route
         )
-        #cost_path_solutions = elementary_path_problem._solve_exact_bidirectional()
         
         return cost_path_solutions
