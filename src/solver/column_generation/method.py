@@ -1,10 +1,11 @@
 from problem.cvrp import CVRP, Route
 from problem.solution import Solution
+from utils.logger import Log
 
 from . import initial_solution
 from .master_problem import MasterProblem
 from .pricing_problem import PricingProblem
-from utils.logger import Log
+
 
 class SolverColumnGeneration:
     """This class has the responsibility of solving the CVRP
@@ -27,7 +28,7 @@ class SolverColumnGeneration:
         self.instance: CVRP = instance
         self.initial_solution: Solution = None
         self.log = Log()
-        
+
         # heuristic solution
         # self.initial_solution = closest_client(instance)
         self.initial_solution = initial_solution.one_route_per_client(instance)
@@ -49,20 +50,24 @@ class SolverColumnGeneration:
         )
 
         last_min_reduced_cost_entered = None
-        
+
         for i in range(max_iterations):
-            print(f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n")
-            
+            print(
+                f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n"
+            )
+
             # Get the current state to show performance evolution
             self.master.build_model(is_linear=False)
             self.master.solve()
             obj_bound, obj_value = self.master.get_Obj_Values()
-            self.log.add(iteration=i,
-                         of_linear_lower_bound=obj_bound,
-                         of_integer_optimal_value=obj_value,
-                         number_routes=len(self.master.routes),
-                         min_reduced_cost=last_min_reduced_cost_entered)
-            
+            self.log.add(
+                iteration=i,
+                of_linear_lower_bound=obj_bound,
+                of_integer_optimal_value=obj_value,
+                number_routes=len(self.master.routes),
+                min_reduced_cost=last_min_reduced_cost_entered,
+            )
+
             # Get the duals
             self.master.build_model(is_linear=True)
             self.master.solve()
@@ -74,7 +79,7 @@ class SolverColumnGeneration:
             cost_path_solutions = self.pricing.solve()
             last_min_reduced_cost_entered = None
             if len(cost_path_solutions) > 0:
-                last_min_reduced_cost_entered = min([c for c,p in cost_path_solutions])
+                last_min_reduced_cost_entered = min([c for c, p in cost_path_solutions])
                 print("\nResults of Pricing Problem:")
                 for i, (reduced_cost, path) in enumerate(cost_path_solutions):
                     # add route to the master problem
@@ -83,7 +88,9 @@ class SolverColumnGeneration:
                     self.instance.is_valid_route(route)
                     cost = self.instance.get_route_cost(route)
                     self.master.add_route(route, cost)
-                    print(f"\t {i+1}: red-cost: {reduced_cost} path: {path}, cost: {cost}")
+                    print(
+                        f"\t {i+1}: red-cost: {reduced_cost} path: {path}, cost: {cost}"
+                    )
             else:
                 print(f"\nNo reduced-cost routes found! Ending Column Generation...")
                 break
@@ -94,16 +101,18 @@ class SolverColumnGeneration:
         self.master.build_model(is_linear=False)
         self.master.solve()
         obj_bound, obj_value = self.master.get_Obj_Values()
-        self.log.add(iteration=i+1,
-                    of_linear_lower_bound=obj_bound,
-                    of_integer_optimal_value=obj_value,
-                    number_routes=len(self.master.routes),
-                    min_reduced_cost=None)
+        self.log.add(
+            iteration=i + 1,
+            of_linear_lower_bound=obj_bound,
+            of_integer_optimal_value=obj_value,
+            number_routes=len(self.master.routes),
+            min_reduced_cost=None,
+        )
 
         # Now save the log
         self.log.save(folder=folder)
         self.log.plot(folder=folder)
-        
+
         final_solution: Solution = self.master.get_solution()
         instance.draw(
             routes=final_solution.routes,

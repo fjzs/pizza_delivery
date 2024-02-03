@@ -1,0 +1,37 @@
+{
+    "0": {
+        "iteration": 0,
+        "min_reduced_cost": null,
+        "number_routes": 10,
+        "of_integer_optimal_value": 301.2,
+        "of_linear_lower_bound": 301.2
+    },
+    "1": {
+        "iteration": 1,
+        "min_reduced_cost": null,
+        "number_routes": 15,
+        "of_integer_optimal_value": 195.5,
+        "of_linear_lower_bound": 195.5
+    },
+    "2": {
+        "iteration": 2,
+        "min_reduced_cost": -43.7,
+        "number_routes": 12,
+        "of_integer_optimal_value": 195.5,
+        "of_linear_lower_bound": 195.5
+    },
+    "3": {
+        "iteration": 3,
+        "min_reduced_cost": -38.8,
+        "number_routes": 13,
+        "of_integer_optimal_value": 195.5,
+        "of_linear_lower_bound": 195.5
+    },
+    "4": {
+        "iteration": 4,
+        "min_reduced_cost": -39.0,
+        "number_routes": 14,
+        "of_integer_optimal_value": 195.5,
+        "of_linear_lower_bound": 195.5
+    }
+}

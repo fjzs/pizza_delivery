@@ -1,12 +1,12 @@
 import os
 from typing import Dict, List
 
+import matplotlib.colors as mcolors
 import matplotlib.patches as patches
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.path import Path
 from scipy.spatial.distance import cdist
-import matplotlib.colors as mcolors
 
 from problem import instance
 from problem.route import Route
@@ -118,18 +118,20 @@ class CVRP:
         for i in range(self.n):
             x, y = self.coordinates[i, :]
             color = "black"
-            ax.scatter(x, y, s=200, color=color)  # circle
-            y_displacement = 0
-            x_displacement = 0 if i < 10 else -2
+            ax.scatter(x, y, s=250, color=color)  # circle
+            y_displacement = -0.5
+            x_displacement = -0.4 if i < 10 else -0.6
             plt.annotate(
-                str(i), (x + x_displacement, y + y_displacement), color="red", size=10
+                str(i), (x + x_displacement, y + y_displacement), color="white", size=10
             )  # id
 
         # Plot the routes
         colormap = plt.cm.viridis
         route_ids = routes.keys()
-        norm = mcolors.Normalize(vmin = min(route_ids), vmax = max(route_ids))
-        colors = {id: colormap(norm(id)) for id in route_ids} # Get a unique color for each route_id        
+        norm = mcolors.Normalize(vmin=min(route_ids), vmax=max(route_ids))
+        colors = {
+            id: colormap(norm(id)) for id in route_ids
+        }  # Get a unique color for each route_id
 
         for id, route in routes.items():
             if len(route.nodes) > 0:
@@ -144,5 +146,5 @@ class CVRP:
         # Save the fig
         filepath = os.path.join(folder_to_save, filename) + ".png"
         plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
-        plt.show()
+        plt.clf()
         print(f"Saved {filepath}")
