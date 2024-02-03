@@ -22,7 +22,7 @@ class Solution:
         clients_covered = set()
         for r in self.routes.values():
             clients_covered.update(r.clients)
-        assert clients_covered == set(range(1, self.instance.n + 1))
+        assert clients_covered == set(self.instance.customers)
 
         # Compute the cost per route and solution cost
         self.cost_per_route: Dict[int, float] = dict()

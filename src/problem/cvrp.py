@@ -23,11 +23,11 @@ class CVRP:
         """
         self.n: int = data["N"]
         """
-        Number of nodes of this instance. Those are {0, 1, .., n}
+        Number of nodes of this instance. Those are {0, 1, .., n-1}
         """
-        self.customers: List[int] = list(range(1, self.n + 1))
+        self.customers: List[int] = list(range(1, self.n))
         """
-        List of customers, they have ids {1, ..., n}
+        List of customers, they have ids {1, ..., n-1}
         """
         self.demand: List[int] = data["demand"]
         """
@@ -115,7 +115,7 @@ class CVRP:
         plt.title(title)
 
         # Plot nodes ids
-        for i in range(self.n + 1):
+        for i in range(self.n):
             x, y = self.coordinates[i, :]
             color = "black"
             ax.scatter(x, y, s=200, color=color)  # circle
