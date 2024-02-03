@@ -195,6 +195,18 @@ class MasterProblem:
         """Solves the master problem"""
         self.model.optimize()
 
+    def get_Obj_Values(self) -> tuple[float, float]:
+        """Retrieves:
+        * ObjBound (Best available objective bound (lower bound for minimization, upper bound for maximization)
+        * ObjVal (Objective value for current solution)
+        
+        Source: https://www.gurobi.com/documentation/current/refman/attributes.html
+
+        Returns:
+            ObjBound (float), ObjVal (float).
+        """
+        return self.model.ObjBound, self.model.ObjVal
+    
     def get_solution(self) -> Solution:
         """Get the solution after solving the integer problem
 
@@ -219,7 +231,7 @@ class MasterProblem:
 
     def get_duals(self) -> Dict[int, float]:
         """After solving the linear relaxation of the Master Problem
-        retrieve the shadow prices associated to the constrain. We
+        retrieve the shadow prices associated to the constraint. We
         have |C| constraints and duals (λi) associated with serving the
         clients.
 

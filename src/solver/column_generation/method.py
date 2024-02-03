@@ -4,7 +4,7 @@ from problem.solution import Solution
 from . import initial_solution
 from .master_problem import MasterProblem
 from .pricing_problem import PricingProblem
-
+from utils.logger import Log
 
 class SolverColumnGeneration:
     """This class has the responsibility of solving the CVRP
@@ -26,7 +26,8 @@ class SolverColumnGeneration:
         """
         self.instance: CVRP = instance
         self.initial_solution: Solution = None
-
+        self.log = Log()
+        
         # heuristic solution
         # self.initial_solution = closest_client(instance)
         self.initial_solution = initial_solution.one_route_per_client(instance)
@@ -36,17 +37,6 @@ class SolverColumnGeneration:
             filename="heuristic",
             folder_to_save=folder,
         )
-
-        # bad solution
-        # r1 = Route([0, 2, 4, 0])
-        # r2 = Route([0, 5, 3, 1, 0])
-        # self.initial_solution = Solution(instance, {1: r1, 2: r2})
-        # instance.draw(
-        #     self.initial_solution.routes,
-        #     title=f"Bad Initial Solution Z={self.initial_solution.total_cost}",
-        #     save_file=True,
-        #     file_name="bad",
-        # )
 
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.initial_solution)
@@ -58,12 +48,21 @@ class SolverColumnGeneration:
             demand=self.instance.demand,
         )
 
+        last_min_reduced_cost_entered = None
+        
         for i in range(max_iterations):
-            print(
-                f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n"
-            )
-            print(f"Master has: {len(self.master.routes)} unique routes")
-
+            print(f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n")
+            
+            # Get the current state to show performance evolution
+            self.master.build_model(is_linear=False)
+            self.master.solve()
+            obj_bound, obj_value = self.master.get_Obj_Values()
+            self.log.add(iteration=i,
+                         of_linear_lower_bound=obj_bound,
+                         of_integer_optimal_value=obj_value,
+                         number_routes=len(self.master.routes),
+                         min_reduced_cost=last_min_reduced_cost_entered)
+            
             # Get the duals
             self.master.build_model(is_linear=True)
             self.master.solve()
@@ -73,7 +72,9 @@ class SolverColumnGeneration:
             # Find a negative reduced-cost path
             print(f"\nSolving the pricing problem...")
             cost_path_solutions = self.pricing.solve()
+            last_min_reduced_cost_entered = None
             if len(cost_path_solutions) > 0:
+                last_min_reduced_cost_entered = min([c for c,p in cost_path_solutions])
                 print("\nResults of Pricing Problem:")
                 for i, (reduced_cost, path) in enumerate(cost_path_solutions):
                     # add route to the master problem
@@ -92,6 +93,17 @@ class SolverColumnGeneration:
         print(f"Now solving the MIP Master:")
         self.master.build_model(is_linear=False)
         self.master.solve()
+        obj_bound, obj_value = self.master.get_Obj_Values()
+        self.log.add(iteration=i+1,
+                    of_linear_lower_bound=obj_bound,
+                    of_integer_optimal_value=obj_value,
+                    number_routes=len(self.master.routes),
+                    min_reduced_cost=None)
+
+        # Now save the log
+        self.log.save(folder=folder)
+        self.log.plot(folder=folder)
+        
         final_solution: Solution = self.master.get_solution()
         instance.draw(
             routes=final_solution.routes,
