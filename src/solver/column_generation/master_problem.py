@@ -17,11 +17,9 @@ class MasterProblem:
 
     subject to:
 
-    Σ_r X_r * a_ir >= 1, Ɐ i ∈ N - {0} (attend the clients)
+    * Σ_r X_r * a_ir >= 1, Ɐ i ∈ C (attend the clients)
 
-    Σ_r X_r <= K (vehicles capacity)
-
-    X_r ∈ {0,1}
+    * X_r ∈ {0,1}
 
     """
 
@@ -52,20 +50,15 @@ class MasterProblem:
 
         # Define model attributes (set_, par_, var_, )
         self.model = gp.Model("MasterProblem")
-
-        # Store the constraints here
-        self.constraints: Dict[int, gp.Constr] = None
-
+        
         # Define the sets
-        # ids of routes
-        num_clients = self.instance.N
-        self.set_R: Set[int] = set()
-        self.set_N: Set[int] = set(range(1, num_clients + 1))
+        self.set_R: Set[int] = set() # set of routes
+        self.set_C: Set[int] = set(self.instance.customers) # set of customers
 
         # Define the parameters
         # client_id -> list of routes that visit it
         self.par_routes_per_client: Dict[int, List[int]] = dict()
-        for i in self.set_N:
+        for i in self.set_C:
             self.par_routes_per_client[i] = []
 
         # route id -> cost of route ($)
@@ -89,9 +82,10 @@ class MasterProblem:
         assert isinstance(r, Route)
         assert cost >= 0
 
-        # This representation is hashable
+        # This representation is hashable and so it can check if the route is repeated
+        # in O(1)
         nodes_tuple = tuple(r.nodes)
-        clients_per_route = nodes_tuple[1:-1]
+        clients_per_route = nodes_tuple[1:-1] # don't loose the order
 
         if nodes_tuple not in self.routes:
             # Update non-model attributes
@@ -129,6 +123,8 @@ class MasterProblem:
         # for i, con in enumerate(self.model.getConstrs()):
         #     print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
 
+        self._print_routes()
+
     def _add_variables(self, is_linear: bool):
         """Add the variables of the model:
 
@@ -153,14 +149,6 @@ class MasterProblem:
             linear (bool):
         """
         self._add_constraint_serve_clients(is_linear)
-        self._add_constraint_vehicles_limit()
-
-    def _add_constraint_vehicles_limit(self):
-        """Use at most K vehicles"""
-        self.con_vehicle_limit = self.model.addConstr(
-            -gp.quicksum(self.var_X[r] for r in self.set_R) >= -self.instance.K,
-            name="vehicles_limit",
-        )
 
     def _add_constraint_serve_clients(self, is_linear: bool):
         """Each customer must be served
@@ -178,7 +166,7 @@ class MasterProblem:
                         )
                         >= 1.0
                     )
-                    for i in self.set_N
+                    for i in self.set_C
                 ),
                 name="serve_client",
             )
@@ -192,7 +180,7 @@ class MasterProblem:
                         )
                         == 1.0
                     )
-                    for i in self.set_N
+                    for i in self.set_C
                 ),
                 name="serve_client",
             )
@@ -229,14 +217,14 @@ class MasterProblem:
         )
         return solution
 
-    def get_duals(self) -> tuple[Dict[int, float], float]:
+    def get_duals(self) -> Dict[int, float]:
         """After solving the linear relaxation of the Master Problem
-        retrieve the shadow prices associated to the constraints. We
-        have |N|-1 constraints and duals (λi) associated with serving the
-        clients and 1 constraint and dual (μ) with the vehicle capacity.
+        retrieve the shadow prices associated to the constrain. We
+        have |C| constraints and duals (λi) associated with serving the
+        clients.
 
         Returns:
-            client_dual (tuple[Dict[int, float], float]): {i: λi}, μ
+            client_dual (Dict[int, float]): {i: λi}
         """
 
         # self.model.display()
@@ -245,11 +233,13 @@ class MasterProblem:
         # https://support.gurobi.com/hc/en-us/community/posts/15340462880785-How-to-retrieve-the-dual-variable-value-for-a-linear-constraint-in-a-SOCP-problem
         client_dual: Dict[int, float] = dict()
         for client_id, c in self.con_serve_clients.items():
-            # print(f"client id: {client_id}, dual: {c.Pi}")
             client_dual[client_id] = c.Pi
 
-        vehicle_cap_dual = self.con_vehicle_limit.Pi
-        # print(f"vehicle cap dual: {vehicle_cap_dual}")
+        assert len(client_dual) == len(self.set_C)
+        return client_dual
 
-        assert len(client_dual) == len(self.set_N)
-        return client_dual, vehicle_cap_dual
+    def _print_routes(self):
+        print(f"Clients per route in the Master Problem:")
+        for id,clients in self.clients_per_route.items():
+            print(f"\tr={id+1}: {clients}")
+            

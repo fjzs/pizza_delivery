@@ -9,7 +9,6 @@ from utils import utils
 
 def create(
     num_clients: int,
-    num_vehicles: int,
     capacity: int,
     name: str,
     folder: str,
@@ -19,7 +18,6 @@ def create(
 
     Args:
         num_clients (int):
-        num_vehicles (int):
         capacity (int):
         name (str):
         folder (str):
@@ -27,12 +25,10 @@ def create(
     """
 
     assert num_clients >= 1
-    assert num_vehicles >= 1
     assert capacity >= 1
 
     instance = dict()
-    instance["K"] = num_vehicles
-    instance["N"] = num_clients
+    instance["N"] = num_clients + 1
     instance["Q"] = capacity
 
     # Compute all the points in a cartesian grid and then pick

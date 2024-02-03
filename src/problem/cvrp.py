@@ -17,14 +17,30 @@ class CVRP:
 
     def __init__(self, filepath: str):
         data = instance.load(filepath)
-        self.K: int = data["K"]  # number of vehicles
-        self.Q: int = data["Q"]  # capacity of vehicles
-        self.N: int = data["N"]  # number of clients (not considering depot)
-        self.demand: List[int] = data["demand"]  # demand of each node
+        self.q: int = data["Q"]
+        """
+        Capacity of vehicles
+        """
+        self.n: int = data["N"]
+        """
+        Number of nodes of this instance. Those are {0, 1, .., n}
+        """
+        self.customers: List[int] = list(range(1, self.n + 1))
+        """
+        List of customers, they have ids {1, ..., n}
+        """
+        self.demand: List[int] = data["demand"]
+        """
+        Demand of each node. d[0] = 0
+        """
         self.coordinates: np.ndarray = np.asarray(data["coordinates"])
+        """
+        [x_i, y_i] of each node i
+        """
         self.distance: np.ndarray = self._get_distances(self.coordinates)
-        # print(f"distances:\n{self.distance}")
-        # print(f"demand:\n{self.demand}")
+        """
+        Distance matrix with shape (n,n)
+        """
 
     def is_valid_route(self, r: Route) -> bool:
         """Checks the validity of the route:
@@ -45,7 +61,7 @@ class CVRP:
         assert r.nodes[0] == 0  # start is the depot
         assert r.nodes[-1] == 0  # end is the depot
         demand_covered = sum([self.demand[i] for i in r.clients])
-        assert demand_covered <= self.Q  # constraint capacity
+        assert demand_covered <= self.q  # constraint capacity
         return True
 
     def get_route_cost(self, r: Route) -> float:
@@ -99,13 +115,14 @@ class CVRP:
         plt.title(title)
 
         # Plot nodes ids
-        for i in range(self.N + 1):
+        for i in range(self.n + 1):
             x, y = self.coordinates[i, :]
             color = "black"
             ax.scatter(x, y, s=200, color=color)  # circle
-            x_displacement = -1 if i < 10 else -2
+            y_displacement = 0
+            x_displacement = 0 if i < 10 else -2
             plt.annotate(
-                str(i), (x + x_displacement, y - 1), color="white", size=10
+                str(i), (x + x_displacement, y + y_displacement), color="red", size=10
             )  # id
 
         # Plot the routes

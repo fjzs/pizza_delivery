@@ -7,10 +7,24 @@ from problem.route import Route
 from problem.solution import Solution
 
 
-def get_initial_solution(data: CVRP) -> Solution:
+def one_route_per_client(data: CVRP) -> Solution:
+    """This heuristic sets one route per client
+
+    Args:
+        data (CVRP):
+
+    Returns:
+        Solution:
+    """
+    routes: Dict[int, Route] = dict()
+    for c in data.customers:
+        r = Route([0, c, 0])
+        routes[len(routes)] = r
+    return Solution(data, routes)
+
+
+def closest_client(data: CVRP) -> Solution:
     """This heuristic finds the closest client iteratively.
-    It provides at most 1 route for each vehicle in the dictionary.
-    It may not provide a route for every vehicle.
 
     Args:
         data (CVRP): instance
@@ -18,36 +32,31 @@ def get_initial_solution(data: CVRP) -> Solution:
     Returns:
         Solution:
     """
-    open_clients = list(range(1, data.N + 1))  # from 1,..., N
-    vehicles_ids = list(range(1, data.K + 1))  # from 1,..., K
+    open_clients = data.customers.copy()
     routes: Dict[int, Route] = dict()
+    capacity = data.q
 
-    for k in vehicles_ids:
-        nodes = []
+    while len(open_clients) > 0:
+        # this is the current route
+        nodes = [0]  # start at the depot
+        route_cap = capacity
 
-        # Get a route for this vehicle
-        if len(open_clients) > 0:
-            nodes = [0]  # start at the depot
-            capacity = data.Q
+        while route_cap > 0 and len(open_clients) > 0:
+            next_client = _get_closest_open_client(
+                origin=nodes[-1],
+                open_clients=open_clients,
+                distances=data.distance,
+                capacity_left=route_cap,
+                demand=data.demand,
+            )
+            nodes.append(next_client)
+            route_cap -= data.demand[next_client]
+            open_clients.remove(next_client)
 
-            # Look iterateviely for next closest client that fits in the vehicle
-            while capacity > 0 and len(open_clients) > 0:
-                next_client = _get_closest_open_client(
-                    origin=nodes[-1],
-                    open_clients=open_clients,
-                    distances=data.distance,
-                    capacity_left=capacity,
-                    demand=data.demand,
-                )
-                nodes.append(next_client)
-                capacity -= data.demand[next_client]
-                open_clients.remove(next_client)
-
-            # there is no more capacity or clients left, close the route
-            nodes.append(0)
-            route = Route(nodes)
-            # Add the route to the solution
-            routes[k] = route
+        # there is no more capacity or clients left, close the route
+        nodes.append(0)
+        route = Route(nodes)
+        routes[len(routes)] = route  # Add the route to the solution
 
     return Solution(data, routes)
 

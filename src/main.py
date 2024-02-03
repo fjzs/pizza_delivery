@@ -11,7 +11,6 @@ if __name__ == "__main__":
     # # Create a new instance
     # create(
     #     num_clients=20,
-    #     num_vehicles=5,
     #     capacity=4,
     #     name="03",
     #     folder=FOLDER_INSTANCES,
@@ -19,10 +18,10 @@ if __name__ == "__main__":
     # )
 
     # Solve
-    instance = "03"
+    instance = "01"
     instance_folder = os.path.join(FOLDER_INSTANCES, instance)
     filepath = os.path.join(instance_folder, instance) + ".json"
     data = CVRP(filepath)
     solver = SolverColumnGeneration(
-        instance=data, folder=instance_folder, max_iterations=1
+        instance=data, folder=instance_folder, max_iterations=5
     )
