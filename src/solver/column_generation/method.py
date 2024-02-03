@@ -32,7 +32,7 @@ class SolverColumnGeneration:
         self.initial_solution = initial_solution.one_route_per_client(instance)
         instance.draw(
             self.initial_solution.routes,
-            title=f"Heuristic Cost={round(self.initial_solution.total_cost,1)}",
+            title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",
             filename="heuristic",
             folder_to_save=folder,
         )
@@ -95,7 +95,7 @@ class SolverColumnGeneration:
         final_solution: Solution = self.master.get_solution()
         instance.draw(
             routes=final_solution.routes,
-            title=f"Final Cost={round(final_solution.total_cost),1}",
+            title=f"Final Cost = {round(final_solution.total_cost, 1)}",
             filename="final",
             folder_to_save=folder,
         )

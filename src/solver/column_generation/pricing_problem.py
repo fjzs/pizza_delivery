@@ -95,8 +95,11 @@ class PricingProblem:
 
 
         elementary_path_problem = ESPCC(costs=cost, times=times, T=self.capacity, source=0, target=n)
-        cost_path_solutions = elementary_path_problem.solve_enumeration(
+        cost_path_solutions = elementary_path_problem.solve(
+            method="enumeration",
             max_num_solutions=_MAX_NUM_SOLUTIONS,
             max_clients_per_path= self.max_clients_per_route
         )
+        #cost_path_solutions = elementary_path_problem._solve_exact_bidirectional()
+        
         return cost_path_solutions
