@@ -129,9 +129,9 @@ class ESPCC:
                 if dist_ij != np.inf:
                     G.add_edge(name_i, name_j, weight = dist_ij, res_cost = np.asarray([0, time_ij]))
         
-        print(f"\nEdges in the ESPCC:")
-        for edge in G.edges(data=True):
-            print(edge)
+        # print(f"\nEdges in the ESPCC:")
+        # for edge in G.edges(data=True):
+        #     print(edge)
             
         algorithm = BiDirectional(G=G, max_res=[self.T, self.T], min_res=[0, 0], elementary=True)
         algorithm.run()

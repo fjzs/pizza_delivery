@@ -123,7 +123,7 @@ class MasterProblem:
         # for i, con in enumerate(self.model.getConstrs()):
         #     print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
 
-        self._print_routes()
+        #self._print_routes()
 
     def _add_variables(self, is_linear: bool):
         """Add the variables of the model:
