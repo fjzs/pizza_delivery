@@ -1,17 +1,10 @@
 {
-    "0": {
-        "iteration": 0,
-        "min_reduced_cost": null,
-        "number_routes": 3,
-        "of_integer_optimal_value": 6.8,
-        "of_linear_lower_bound": 6.8
-    },
     "1": {
         "iteration": 1,
         "min_reduced_cost": -2.8,
         "number_routes": 4,
-        "of_integer_optimal_value": 4.0,
-        "of_linear_lower_bound": 4.0
+        "of_integer_optimal_value": 6.8,
+        "of_linear_lower_bound": 6.8
     },
     "2": {
         "iteration": 2,

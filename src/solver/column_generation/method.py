@@ -12,8 +12,6 @@ class SolverColumnGeneration:
     with a column generation approach
     """
 
-    # TODO: check of plot and save the solutions over time
-
     def __init__(
         self,
         instance: CVRP,
@@ -33,12 +31,18 @@ class SolverColumnGeneration:
         self.folder = folder
 
         # heuristic solution
-        # self.initial_solution = closest_client(instance)
-        self.initial_solution = initial_solution.one_route_per_client(instance)
+        self.initial_solution = initial_solution.closest_client(instance)
+        # self.initial_solution = initial_solution.one_route_per_client(instance)
         instance.draw(
             self.initial_solution.routes,
             title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",
             filename="heuristic",
+            folder_to_save=folder,
+        )
+        instance.draw(
+            self.initial_solution.routes,
+            title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",
+            filename="current",
             folder_to_save=folder,
         )
 
@@ -51,8 +55,6 @@ class SolverColumnGeneration:
             capacity=self.instance.q,
             demand=self.instance.demand,
         )
-
-        last_min_reduced_cost_entered = None
 
         for i in range(max_iterations):
             print(
@@ -78,7 +80,7 @@ class SolverColumnGeneration:
             # Solve the Linear MP to get the duals
             obj_value_linear, client_duals = self._solve_MP(is_linear=True)
             self.pricing.set_duals(client_duals)
-            print(f"client duals: {client_duals}")
+            # print(f"\nClient duals: {client_duals}")
 
             # Solve the pricing problem to find reduced-cost columns
             print("\nSolving the pricing problem...")
@@ -116,7 +118,7 @@ class SolverColumnGeneration:
         """
         self.master.build_model(is_linear=is_linear)
         self.master.solve()
-        obj_value = self.master.get_Obj_Values()
+        obj_value = self.master.get_Obj_Value()
         client_duals = None
         if is_linear:
             client_duals = self.master.get_duals()
@@ -155,7 +157,16 @@ class SolverColumnGeneration:
         name = str(iteration).zfill(characters_length)
         self.instance.draw(
             routes=solution.routes,
-            title=f"Iteration {name} Z = {round(solution.total_cost, 1)}",
-            filename="name",
+            title=f"Iteration #{name}, Z = {round(solution.total_cost, 1)}",
+            filename=name,
+            folder_to_save=self.folder,
+        )
+
+        # This is to create a video effect in visual studio, I'll have a window only
+        # displaying this solution so I can see in real time how the MIP changes
+        self.instance.draw(
+            routes=solution.routes,
+            title=f"Iteration #{name}, Z = {round(solution.total_cost, 1)}",
+            filename="current",
             folder_to_save=self.folder,
         )
