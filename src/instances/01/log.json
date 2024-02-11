@@ -8,8 +8,22 @@
     },
     "1": {
         "iteration": 1,
-        "min_reduced_cost": null,
+        "min_reduced_cost": -2.8,
         "number_routes": 4,
+        "of_integer_optimal_value": 4.0,
+        "of_linear_lower_bound": 4.0
+    },
+    "2": {
+        "iteration": 2,
+        "min_reduced_cost": -0.6000000000000001,
+        "number_routes": 5,
+        "of_integer_optimal_value": 4.0,
+        "of_linear_lower_bound": 4.0
+    },
+    "3": {
+        "iteration": 3,
+        "min_reduced_cost": null,
+        "number_routes": 5,
         "of_integer_optimal_value": 4.0,
         "of_linear_lower_bound": 4.0
     }

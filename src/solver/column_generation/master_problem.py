@@ -50,10 +50,10 @@ class MasterProblem:
 
         # Define model attributes (set_, par_, var_, )
         self.model = gp.Model("MasterProblem")
-        
+
         # Define the sets
-        self.set_R: Set[int] = set() # set of routes
-        self.set_C: Set[int] = set(self.instance.customers) # set of customers
+        self.set_R: Set[int] = set()  # set of routes
+        self.set_C: Set[int] = set(self.instance.customers)  # set of customers
 
         # Define the parameters
         # client_id -> list of routes that visit it
@@ -85,7 +85,7 @@ class MasterProblem:
         # This representation is hashable and so it can check if the route is repeated
         # in O(1)
         nodes_tuple = tuple(r.nodes)
-        clients_per_route = nodes_tuple[1:-1] # don't loose the order
+        clients_per_route = nodes_tuple[1:-1]  # don't loose the order
 
         if nodes_tuple not in self.routes:
             # Update non-model attributes
@@ -123,7 +123,7 @@ class MasterProblem:
         # for i, con in enumerate(self.model.getConstrs()):
         #     print(f"\n{con}:\n{self.model.getRow(con)} {con.Sense} {con.RHS}")
 
-        #self._print_routes()
+        # self._print_routes()
 
     def _add_variables(self, is_linear: bool):
         """Add the variables of the model:
@@ -195,18 +195,18 @@ class MasterProblem:
         """Solves the master problem"""
         self.model.optimize()
 
-    def get_Obj_Values(self) -> tuple[float, float]:
+    def get_Obj_Value(self) -> float:
         """Retrieves:
-        * ObjBound (Best available objective bound (lower bound for minimization, upper bound for maximization)
         * ObjVal (Objective value for current solution)
-        
+
         Source: https://www.gurobi.com/documentation/current/refman/attributes.html
+        https://www.gurobi.com/documentation/current/refman/objval.html
 
         Returns:
-            ObjBound (float), ObjVal (float).
+            * ObjVal (float)
         """
-        return self.model.ObjBound, self.model.ObjVal
-    
+        return self.model.ObjVal
+
     def get_solution(self) -> Solution:
         """Get the solution after solving the integer problem
 
@@ -252,6 +252,5 @@ class MasterProblem:
 
     def _print_routes(self):
         print(f"Clients per route in the Master Problem:")
-        for id,clients in self.clients_per_route.items():
+        for id, clients in self.clients_per_route.items():
             print(f"\tr={id+1}: {clients}")
-            

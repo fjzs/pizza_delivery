@@ -1,8 +1,11 @@
 from itertools import combinations, permutations
 from typing import List, Set
+
 import networkx as nx
-from cspy import BiDirectional
 import numpy as np
+from cspy import BiDirectional
+
+REDUCED_COST_MAX_VALUE = -0.01
 
 
 class ESPCC:
@@ -30,7 +33,7 @@ class ESPCC:
         assert len(costs.shape) == 2
         assert costs.shape[0] == costs.shape[1]  # square matrix
         N = costs.shape[0]
-        
+
         # Check times
         assert times is not None
         assert isinstance(times, np.ndarray)
@@ -45,16 +48,17 @@ class ESPCC:
         assert 0 <= source < N
         assert 0 <= target < N
         assert source != target
-        
-        self.N = N # number of nodes
+
+        self.N = N  # number of nodes
         self.costs = costs
         self.times = times
         self.T = T
         self.source = source
         self.target = target
 
-    
-    def _solve_exact_enumeration(self, max_num_solutions: int, max_clients_per_path: int) -> List[List[int]]:
+    def _solve_exact_enumeration(
+        self, max_num_solutions: int, max_clients_per_path: int
+    ) -> List[List[int]]:
         """The enumeration procedure finds solutions of the type:
         source -> M -> target, where M is a set of unique nodes different than {s, t},
         such that the solution is feasible and the cost is < 0.
@@ -81,9 +85,11 @@ class ESPCC:
             clients_combinations = combinations(M, i)
             for clients in clients_combinations:
                 sequences = permutations(clients)
-                sequence_path = [[self.source] + list(s) + [self.target] for s in sequences]
+                sequence_path = [
+                    [self.source] + list(s) + [self.target] for s in sequences
+                ]
                 paths.extend(sequence_path)
-                paths_explored += len(sequence_path)                
+                paths_explored += len(sequence_path)
         print(f"\tExplored {paths_explored} paths")
         return paths
 
@@ -92,7 +98,7 @@ class ESPCC:
 
         Args:
             p (List[int]): path
-            
+
         Returns:
             tuple[bool, float]: feasible, cost
         """
@@ -108,32 +114,39 @@ class ESPCC:
                 feasible = False
                 break
         return feasible, cost
-    
+
     def _solve_exact_bidirectional(self) -> List[List[int]]:
         """
         Uses the Bidirectional labeling algorithm with dynamic halfway point from Tilk et al (2017), implemented
         in the package cspy. https://cspy.readthedocs.io/en/latest/python_api/cspy.BiDirectional.html
-        
+
         Returns:
             paths (List[List[int]]): list of paths (only returns one)
         """
         G = nx.DiGraph(directed=True, n_res=2)
-        
+
         # Add the edges to this graph
         for i in range(self.N):
             name_i = "Source" if i == 0 else i
             for j in range(self.N):
-                name_j = "Sink" if j == self.N-1 else j
-                dist_ij = self.costs[i,j]
-                time_ij = self.times[i,j]
+                name_j = "Sink" if j == self.N - 1 else j
+                dist_ij = self.costs[i, j]
+                time_ij = self.times[i, j]
                 if dist_ij != np.inf:
-                    G.add_edge(name_i, name_j, weight = dist_ij, res_cost = np.asarray([0, time_ij]))
-        
+                    G.add_edge(
+                        name_i,
+                        name_j,
+                        weight=dist_ij,
+                        res_cost=np.asarray([0, time_ij]),
+                    )
+
         # print(f"\nEdges in the ESPCC:")
         # for edge in G.edges(data=True):
         #     print(edge)
-            
-        algorithm = BiDirectional(G=G, max_res=[self.T, self.T], min_res=[0, 0], elementary=True)
+
+        algorithm = BiDirectional(
+            G=G, max_res=[self.T, self.T], min_res=[0, 0], elementary=True
+        )
         algorithm.run()
         path = algorithm.path
         print(f"\nBidirectional algorithm result:")
@@ -141,15 +154,16 @@ class ESPCC:
         print(f"\treduced-cost: {algorithm.total_cost}")
         print(f"\tconsumed resources: {algorithm.consumed_resources[1]}")
         if path[0] == "Source" and path[-1] == "Sink":
-            path[0] = 0 # this is the depot
-            path[-1] = self.N-1 # this is the virtual depot
+            path[0] = 0  # this is the depot
+            path[-1] = self.N - 1  # this is the virtual depot
         else:
             raise ValueError(f"path does not match: {path}")
-        
+
         return [path]
-        
-        
-    def solve(self, method: str, max_num_solutions: int, max_clients_per_path: int) -> List[tuple[float, List[int]]]:
+
+    def solve(
+        self, method: str, max_num_solutions: int, max_clients_per_path: int
+    ) -> List[tuple[float, List[int]]]:
         """Solves the ESPCC by a given method
 
         Args:
@@ -160,20 +174,21 @@ class ESPCC:
         """
         paths = []
         if method == "enumeration":
-            paths = self._solve_exact_enumeration(max_num_solutions, max_clients_per_path)
+            paths = self._solve_exact_enumeration(
+                max_num_solutions, max_clients_per_path
+            )
         elif method == "bidirectional":
             paths = self._solve_exact_bidirectional()
         else:
             raise ValueError(f"I dont recognize method {method}")
-        
+
         # Check the paths and compute their cost and feasibility
         solutions: List[float, List[int]] = []
         for p in paths:
             feasible, cost = self._evaluate_path(p)
-            if feasible and cost < 0:
+            if feasible and cost < REDUCED_COST_MAX_VALUE:
                 solutions.append((cost, p))
-        
+
         # Return some of the solutions found
         solutions.sort()
         return solutions[0 : min(len(solutions), max_num_solutions)]
-        
