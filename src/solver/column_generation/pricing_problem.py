@@ -4,8 +4,6 @@ import numpy as np
 
 from .espcc import ESPCC
 
-_MAX_NUM_SOLUTIONS = 1
-
 
 class PricingProblem:
     """
@@ -44,7 +42,7 @@ class PricingProblem:
 
     def solve(self) -> List[tuple[float, List[int]]]:
         """Solves this problem with the goal of finding reduced-cost
-        paths from depot to clients and to depot
+        routes
 
         Returns:
             solutions (List[tuple[float, List[int]]]): List of (reduced_cost, path)
@@ -95,18 +93,6 @@ class PricingProblem:
             costs=cost, times=times, T=self.capacity, source=0, target=n
         )
 
-        # # Enumeration approach
-        # cost_path_solutions = elementary_path_problem.solve(
-        #     method="enumeration",
-        #     max_num_solutions=_MAX_NUM_SOLUTIONS,
-        #     max_clients_per_path= self.max_clients_per_route
-        # )
-
-        # Exact but faster approach
-        cost_path_solutions = elementary_path_problem.solve(
-            method="bidirectional",
-            max_num_solutions=1,
-            max_clients_per_path=self.max_clients_per_route,
-        )
-
+        # Solve the problem
+        cost_path_solutions = elementary_path_problem.solve()
         return cost_path_solutions

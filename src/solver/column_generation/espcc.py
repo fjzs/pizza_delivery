@@ -1,11 +1,12 @@
 from itertools import combinations, permutations
 from typing import List, Set
 
+import cspy
 import networkx as nx
 import numpy as np
-from cspy import BiDirectional
 
-REDUCED_COST_MAX_VALUE = -0.01
+REDUCED_COST_MAX_VALUE = -0.1
+TIME_LIMIT_S = 5
 
 
 class ESPCC:
@@ -115,13 +116,9 @@ class ESPCC:
                 break
         return feasible, cost
 
-    def _solve_exact_bidirectional(self) -> List[List[int]]:
+    def _prepare_graph(self):
         """
-        Uses the Bidirectional labeling algorithm with dynamic halfway point from Tilk et al (2017), implemented
-        in the package cspy. https://cspy.readthedocs.io/en/latest/python_api/cspy.BiDirectional.html
-
-        Returns:
-            paths (List[List[int]]): list of paths (only returns one)
+        Prepares the graph to be used in the cspy library
         """
         G = nx.DiGraph(directed=True, n_res=2)
 
@@ -139,56 +136,123 @@ class ESPCC:
                         weight=dist_ij,
                         res_cost=np.asarray([0, time_ij]),
                     )
+        self.graph = G
+
+    def _solve_with_cspy(self, method: str) -> List[int]:
+        """
+        Uses the Bidirectional labeling algorithm with dynamic halfway point from Tilk et al (2017), implemented
+        in the package cspy. https://cspy.readthedocs.io/en/latest/python_api/cspy.BiDirectional.html
+
+        Args:
+        * method (str)
+
+        Returns:
+        * path (List[int]): an elementary path in the graph: ['Source', ..., 'Sink']
+        """
 
         # print(f"\nEdges in the ESPCC:")
         # for edge in G.edges(data=True):
         #     print(edge)
 
-        algorithm = BiDirectional(
-            G=G, max_res=[self.T, self.T], min_res=[0, 0], elementary=True
-        )
-        algorithm.run()
-        path = algorithm.path
-        print(f"\nBidirectional algorithm result:")
-        print(f"\tpath: {path}")
-        print(f"\treduced-cost: {algorithm.total_cost}")
-        print(f"\tconsumed resources: {algorithm.consumed_resources[1]}")
-        if path[0] == "Source" and path[-1] == "Sink":
-            path[0] = 0  # this is the depot
-            path[-1] = self.N - 1  # this is the virtual depot
+        algorithm = None
+        if method == "bidirectional":
+            algorithm = cspy.BiDirectional(
+                G=self.graph, max_res=[self.T, self.T], min_res=[0, 0], elementary=True
+            )
+        elif method == "tabu":
+            algorithm = cspy.Tabu(
+                G=self.graph,
+                max_res=[self.T, self.T],
+                min_res=[0, 0],
+                threshold=REDUCED_COST_MAX_VALUE,
+                time_limit=TIME_LIMIT_S,
+            )
+        elif method == "greedy":
+            algorithm = cspy.GreedyElim(
+                G=self.graph,
+                max_res=[self.T, self.T],
+                min_res=[0, 0],
+                threshold=REDUCED_COST_MAX_VALUE,
+            )
+        elif method == "grasp":
+            algorithm = cspy.GRASP(
+                G=self.graph,
+                max_res=[self.T, self.T],
+                min_res=[0, 0],
+                threshold=REDUCED_COST_MAX_VALUE,
+            )
+        elif method == "psolgent":
+            algorithm = cspy.PSOLGENT(
+                G=self.graph,
+                max_res=[self.T, self.T],
+                min_res=[0, 0],
+                threshold=REDUCED_COST_MAX_VALUE,
+            )
         else:
-            raise ValueError(f"path does not match: {path}")
+            raise ValueError(f"method: {method} not recognized")
 
-        return [path]
+        path = None
 
-    def solve(
-        self, method: str, max_num_solutions: int, max_clients_per_path: int
-    ) -> List[tuple[float, List[int]]]:
-        """Solves the ESPCC by a given method
+        try:
+            algorithm.run()
+            path = algorithm.path
+            print(f"\nMethod: {method} algorithm result:")
+            print(f"\tpath: {path}")
+            print(f"\treduced-cost: {algorithm.total_cost}")
+            if path[0] == "Source" and path[-1] == "Sink":
+                pass
+            else:
+                raise ValueError(f"path does not match: {path}")
+        except:
+            print(f"\tMethod {method} did not work...")
+            pass
 
-        Args:
-            method (str): ["enumeration", "bidirectional"]
+        return path
+
+    def solve(self) -> List[tuple[float, List[int]]]:
+        """Solves the ESPCC by multiple methods to get various columns
 
         Returns:
             solutions (List[float, List[int]]): list of (cost, path)
         """
+
+        # First prepare the graph
+        self._prepare_graph()
+
+        # Store the paths here and use the first exact method as pivot
         paths = []
-        if method == "enumeration":
-            paths = self._solve_exact_enumeration(
-                max_num_solutions, max_clients_per_path
-            )
-        elif method == "bidirectional":
-            paths = self._solve_exact_bidirectional()
-        else:
-            raise ValueError(f"I dont recognize method {method}")
+        optimal_path = self._solve_with_cspy(method="bidirectional")
+        paths.append(optimal_path)
+        # paths.append(self._solve_with_cspy(method="tabu")) # removed because it was too slow
+        # paths.append(self._solve_with_cspy(method="grasp")) # did not work
+        # paths.append(self._solve_with_cspy(method="psolgent")) # did not work
+
+        # Remove each arc (i,j) at a time and then solve the problem again to get different routes
+        for index in range(len(optimal_path) - 1):
+            node_i = optimal_path[index]
+            node_j = optimal_path[index + 1]
+
+            # change the weight of this arc to infinity temporarily
+            original_weight = self.graph[node_i][node_j]["weight"]
+            self.graph[node_i][node_j]["weight"] = np.inf
+
+            # Solve the modified graph
+            paths.append(self._solve_with_cspy(method="bidirectional"))
+
+            # Change back the weight
+            self.graph[node_i][node_j]["weight"] = original_weight
 
         # Check the paths and compute their cost and feasibility
         solutions: List[float, List[int]] = []
         for p in paths:
-            feasible, cost = self._evaluate_path(p)
-            if feasible and cost < REDUCED_COST_MAX_VALUE:
-                solutions.append((cost, p))
+            if p is not None:
+                # Change the Source and Sink names
+                p[0] = 0  # this is the depot
+                p[-1] = self.N - 1  # this is the virtual depot
+
+                feasible, cost = self._evaluate_path(p)
+                if feasible and cost < REDUCED_COST_MAX_VALUE:
+                    solutions.append((cost, p))
 
         # Return some of the solutions found
-        solutions.sort()
-        return solutions[0 : min(len(solutions), max_num_solutions)]
+        return solutions

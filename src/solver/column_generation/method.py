@@ -31,8 +31,8 @@ class SolverColumnGeneration:
         self.folder = folder
 
         # heuristic solution
-        self.initial_solution = initial_solution.closest_client(instance)
-        # self.initial_solution = initial_solution.one_route_per_client(instance)
+        # self.initial_solution = initial_solution.closest_client(instance)
+        self.initial_solution = initial_solution.one_route_per_client(instance)
         instance.draw(
             self.initial_solution.routes,
             title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",
@@ -60,18 +60,6 @@ class SolverColumnGeneration:
             print(
                 f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n"
             )
-
-            # Get the current state to show performance evolution
-            # self.master.build_model(is_linear=False)
-            # self.master.solve()
-            # obj_bound, obj_value = self.master.get_Obj_Values()
-            # self.log.add(
-            #     iteration=i,
-            #     of_linear_lower_bound=obj_bound,
-            #     of_integer_optimal_value=obj_value,
-            #     number_routes=len(self.master.routes),
-            #     min_reduced_cost=last_min_reduced_cost_entered,
-            # )
 
             # Solve the Integer MP and draw solution
             obj_value_integer, _ = self._solve_MP(is_linear=False)
