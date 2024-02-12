@@ -31,8 +31,8 @@ class SolverColumnGeneration:
         self.folder = folder
 
         # heuristic solution
-        # self.initial_solution = initial_solution.closest_client(instance)
-        self.initial_solution = initial_solution.one_route_per_client(instance)
+        self.initial_solution = initial_solution.closest_client(instance)
+        # self.initial_solution = initial_solution.one_route_per_client(instance)
         instance.draw(
             self.initial_solution.routes,
             title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",

@@ -127,8 +127,6 @@ def generate_from_vrp_file(folder: str, instance_name: str):
     instance["demand"] = demands
 
     # Plot it and save the figure to inspect it
-    min_demand = min(demands[1:])
-    max_demand = max(demands[1:])
     min_size = 5
     size_per_demand = 3
     plt.scatter(xy[0, 0], xy[0, 1], c="blue", s=30)  # depot
@@ -143,5 +141,5 @@ def generate_from_vrp_file(folder: str, instance_name: str):
         bbox_inches="tight",
         pad_inches=0.1,
     )
-
-    save_instance(instance=instance, file_name=instance_name, folder=folder)
+    folder_instance = os.path.join(folder, instance_name)
+    save_instance(instance=instance, file_name=instance_name, folder=folder_instance)

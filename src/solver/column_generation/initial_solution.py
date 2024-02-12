@@ -49,6 +49,11 @@ def closest_client(data: CVRP) -> Solution:
                 capacity_left=route_cap,
                 demand=data.demand,
             )
+
+            # No client potentialy left to fit in the route
+            if next_client is None:
+                break
+
             nodes.append(next_client)
             route_cap -= data.demand[next_client]
             open_clients.remove(next_client)
@@ -79,9 +84,11 @@ def _get_closest_open_client(
         demand (np.ndarray): client demand
 
     Returns:
-        closest_client (int):
+        closest_client (int): could be None
     """
     subset = [i for i in open_clients if (i != origin) and (capacity_left >= demand[i])]
-    min_index = np.argmin(distances[origin, subset])
-    closest_client = subset[min_index]
+    closest_client = None
+    if len(subset) > 0:
+        min_index = np.argmin(distances[origin, subset])
+        closest_client = subset[min_index]
     return closest_client
