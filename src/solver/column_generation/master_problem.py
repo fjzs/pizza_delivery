@@ -87,6 +87,8 @@ class MasterProblem:
         nodes_tuple = tuple(r.nodes)
         clients_per_route = nodes_tuple[1:-1]  # don't loose the order
 
+        # TODO the reverse route is duplicated as well
+
         if nodes_tuple not in self.routes:
             # Update non-model attributes
             id = len(self.set_R)

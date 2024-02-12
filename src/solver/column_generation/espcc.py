@@ -228,6 +228,7 @@ class ESPCC:
         # paths.append(self._solve_with_cspy(method="psolgent")) # did not work
 
         # Remove each arc (i,j) at a time and then solve the problem again to get different routes
+        # TODO: better to remove the node
         for index in range(len(optimal_path) - 1):
             node_i = optimal_path[index]
             node_j = optimal_path[index + 1]

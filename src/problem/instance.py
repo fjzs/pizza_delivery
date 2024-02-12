@@ -70,8 +70,11 @@ def create(
         pad_inches=0.1,
     )
 
-    # Save the instance file
-    utils.save_dictionary(data=instance, file_name=name, folder=folder_instance)
+    save_instance(instance=instance, file_name=name, folder=folder)
+
+
+def save_instance(instance: dict, file_name: str, folder: str):
+    utils.save_dictionary(data=instance, file_name=file_name, folder=folder)
 
 
 def load(filepath: str) -> dict:
@@ -84,3 +87,61 @@ def load(filepath: str) -> dict:
         (dict):
     """
     return utils.load_file(filepath)
+
+
+def generate_from_vrp_file(folder: str, instance_name: str):
+    filepath = os.path.join(folder, instance_name, instance_name + ".vrp")
+    N = None
+    q = None
+    node_coords_section_active = False
+    demand_section_active = False
+    xy = None
+    demands = None
+
+    with open(filepath, "r") as file:
+        for line in file:
+            if line.startswith("DIMENSION"):
+                N = int(line.split(":")[1].strip())
+                xy = np.zeros((N, 2))
+                demands = [0] * N
+            elif line.startswith("CAPACITY"):
+                q = int(line.split(":")[1].strip())
+            elif line.startswith("NODE_COORD_SECTION"):
+                node_coords_section_active = True
+            elif line.startswith("DEMAND_SECTION"):
+                demand_section_active = True
+                node_coords_section_active = False
+            elif line.startswith("DEPOT_SECTION"):
+                break
+            elif node_coords_section_active:
+                id, x, y = [float(p) for p in line.split()]
+                xy[int(id) - 1] = [int(x), int(y)]
+            elif demand_section_active:
+                id, d_i = [int(p) for p in line.split()]
+                demands[id - 1] = d_i
+
+    instance = dict()
+    instance["N"] = N
+    instance["Q"] = q
+    instance["coordinates"] = xy.tolist()
+    instance["demand"] = demands
+
+    # Plot it and save the figure to inspect it
+    min_demand = min(demands[1:])
+    max_demand = max(demands[1:])
+    min_size = 5
+    size_per_demand = 3
+    plt.scatter(xy[0, 0], xy[0, 1], c="blue", s=30)  # depot
+    plt.scatter(
+        xy[1:, 0],
+        xy[1:, 1],
+        c="red",
+        s=[(min_size + d * size_per_demand) for d in demands[1:]],
+    )  # customers
+    plt.savefig(
+        os.path.join(folder, instance_name, "map.png"),
+        bbox_inches="tight",
+        pad_inches=0.1,
+    )
+
+    save_instance(instance=instance, file_name=instance_name, folder=folder)
