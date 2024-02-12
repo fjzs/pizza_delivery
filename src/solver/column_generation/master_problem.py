@@ -72,7 +72,7 @@ class MasterProblem:
 
     def add_route(self, r: Route, cost: float):
         """If the route is unique its added to the model. The route
-        is something like (0, 5,1,..., 0)
+        is something like (0, a, b, c, 0)
 
         Args:
             r (tuple[int, ...]): the route
@@ -84,15 +84,16 @@ class MasterProblem:
 
         # This representation is hashable and so it can check if the route is repeated
         # in O(1)
-        nodes_tuple = tuple(r.nodes)
-        clients_per_route = nodes_tuple[1:-1]  # don't loose the order
+        route_nodes = tuple(r.nodes)
+        route_nodes_reversed = route_nodes[::-1]
+        clients_per_route = route_nodes[1:-1]  # don't loose the order
 
-        # TODO the reverse route is duplicated as well
-
-        if nodes_tuple not in self.routes:
+        if (route_nodes not in self.routes) and (
+            route_nodes_reversed not in self.routes
+        ):
             # Update non-model attributes
             id = len(self.set_R)
-            self.routes.add(nodes_tuple)
+            self.routes.add(route_nodes)
             self.clients_per_route[id] = clients_per_route
 
             # Update set R
@@ -102,10 +103,10 @@ class MasterProblem:
             for c in clients_per_route:
                 self.par_routes_per_client[c].append(id)
             self.par_cost_per_route[id] = cost
-            print(f"\troute {nodes_tuple} added with id {id}")
+            print(f"\troute {route_nodes} added with id {id}")
 
         else:
-            print(f"\troute {nodes_tuple} is not unique")
+            print(f"\troute {route_nodes} is not unique")
 
     def build_model(self, is_linear: bool):
         """Builds the model with the updated routes.

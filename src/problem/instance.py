@@ -127,14 +127,21 @@ def generate_from_vrp_file(folder: str, instance_name: str):
     instance["demand"] = demands
 
     # Plot it and save the figure to inspect it
-    min_size = 5
-    size_per_demand = 3
-    plt.scatter(xy[0, 0], xy[0, 1], c="blue", s=30)  # depot
+    min_node_size = 5
+    max_node_size = 200
+    min_demand = min(demands[1:])
+    max_demand = max(demands[1:])
+    range_demand = max_demand - min_demand + 1
+    plt.scatter(xy[0, 0], xy[0, 1], c="black", s=100, marker="s")  # depot
     plt.scatter(
         xy[1:, 0],
         xy[1:, 1],
-        c="red",
-        s=[(min_size + d * size_per_demand) for d in demands[1:]],
+        c="black",
+        s=[
+            (min_node_size + max_node_size * (d - min_demand) / range_demand)
+            for d in demands[1:]
+        ],
+        marker="o",
     )  # customers
     plt.savefig(
         os.path.join(folder, instance_name, "map.png"),

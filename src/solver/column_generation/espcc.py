@@ -123,10 +123,11 @@ class ESPCC:
         G = nx.DiGraph(directed=True, n_res=2)
 
         # Add the edges to this graph
+        # Found that the algorithms require the nodes to be str
         for i in range(self.N):
-            name_i = "Source" if i == 0 else i
+            name_i = "Source" if i == 0 else str(i)
             for j in range(self.N):
-                name_j = "Sink" if j == self.N - 1 else j
+                name_j = "Sink" if j == self.N - 1 else str(j)
                 dist_ij = self.costs[i, j]
                 time_ij = self.times[i, j]
                 if dist_ij != np.inf:
@@ -157,7 +158,7 @@ class ESPCC:
         algorithm = None
         if method == "bidirectional":
             algorithm = cspy.BiDirectional(
-                G=self.graph, max_res=[self.T, self.T], min_res=[0, 0], elementary=True
+                G=self.graph, max_res=[self.T, self.T], min_res=[0, 0], elementary=False
             )
         elif method == "tabu":
             algorithm = cspy.Tabu(
@@ -199,6 +200,7 @@ class ESPCC:
             print(f"\nMethod: {method} algorithm result:")
             print(f"\tpath: {path}")
             print(f"\treduced-cost: {algorithm.total_cost}")
+            print(f"\tdemand captured: {algorithm.consumed_resources[1]} / {self.T}")
             if path[0] == "Source" and path[-1] == "Sink":
                 pass
             else:
@@ -220,28 +222,12 @@ class ESPCC:
         self._prepare_graph()
 
         # Store the paths here and use the first exact method as pivot
+        # TODO TEST THIS
         paths = []
-        optimal_path = self._solve_with_cspy(method="bidirectional")
-        paths.append(optimal_path)
-        # paths.append(self._solve_with_cspy(method="tabu")) # removed because it was too slow
-        # paths.append(self._solve_with_cspy(method="grasp")) # did not work
-        # paths.append(self._solve_with_cspy(method="psolgent")) # did not work
-
-        # Remove each arc (i,j) at a time and then solve the problem again to get different routes
-        # TODO: better to remove the node
-        for index in range(len(optimal_path) - 1):
-            node_i = optimal_path[index]
-            node_j = optimal_path[index + 1]
-
-            # change the weight of this arc to infinity temporarily
-            original_weight = self.graph[node_i][node_j]["weight"]
-            self.graph[node_i][node_j]["weight"] = np.inf
-
-            # Solve the modified graph
-            paths.append(self._solve_with_cspy(method="bidirectional"))
-
-            # Change back the weight
-            self.graph[node_i][node_j]["weight"] = original_weight
+        paths.append(self._solve_with_cspy(method="bidirectional"))
+        paths.append(self._solve_with_cspy(method="tabu"))
+        paths.append(self._solve_with_cspy(method="grasp"))
+        paths.append(self._solve_with_cspy(method="psolgent"))
 
         # Check the paths and compute their cost and feasibility
         solutions: List[float, List[int]] = []
@@ -250,7 +236,6 @@ class ESPCC:
                 # Change the Source and Sink names
                 p[0] = 0  # this is the depot
                 p[-1] = self.N - 1  # this is the virtual depot
-
                 feasible, cost = self._evaluate_path(p)
                 if feasible and cost < REDUCED_COST_MAX_VALUE:
                     solutions.append((cost, p))

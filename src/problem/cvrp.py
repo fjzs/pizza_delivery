@@ -124,14 +124,22 @@ class CVRP:
 
         # Plot the nodes proportional to its demand
         min_node_size = 5
-        size_per_demand = 3
+        max_node_size = 200
+        min_demand = min(self.demand[1:])
+        max_demand = max(self.demand[1:])
+        range_demand = max_demand - min_demand + 1
 
         # Plot nodes ids
         for i in range(self.n):
             x, y = self.coordinates[i, :]
             color = "black"
             marker = "s" if i == 0 else "o"
-            size = 100 if i == 0 else min_node_size + size_per_demand * self.demand[i]
+            size = (
+                100
+                if i == 0
+                else min_node_size
+                + max_node_size * (self.demand[i] - min_demand) / range_demand
+            )
             ax.scatter(x, y, s=size, color=color, marker=marker)
             # y_displacement = -0.5
             # x_displacement = -0.4 if i < 10 else -0.6

@@ -57,21 +57,24 @@ class SolverColumnGeneration:
         )
 
         for i in range(max_iterations):
-            print(
-                f"\nMASTER ITERATION: {i+1} ---------------------------------------------\n"
-            )
+            print(f"\n\n========== MASTER ITERATION: {i+1} ==========")
 
             # Solve the Integer MP and draw solution
+            print("\nSOLVING INTEGER MP")
+            print("----------------------------------------------")
             obj_value_integer, _ = self._solve_MP(is_linear=False)
             self._draw_current_solution(i + 1)
 
             # Solve the Linear MP to get the duals
+            print("\n\nSOLVING LINEAR MP")
+            print("----------------------------------------------")
             obj_value_linear, client_duals = self._solve_MP(is_linear=True)
             self.pricing.set_duals(client_duals)
             # print(f"\nClient duals: {client_duals}")
 
             # Solve the pricing problem to find reduced-cost columns
-            print("\nSolving the pricing problem...")
+            print("\n\nSOLVING PRICING PROBLEM")
+            print("----------------------------------------------")
             min_reduced_cost_entered = self._solve_pricing()
 
             # Record the log
