@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # generate_from_vrp_file(folder=FOLDER_INSTANCES, instance_name="CMT1")
 
     # Solve
-    instance = "CMT1"
+    instance = "demand_test"
     instance_folder = os.path.join(FOLDER_INSTANCES, instance)
     filepath = os.path.join(instance_folder, instance) + ".json"
     data = CVRP(filepath)

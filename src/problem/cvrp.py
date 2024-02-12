@@ -42,6 +42,14 @@ class CVRP:
         """
         Distance matrix with shape (n,n)
         """
+        assert self.q >= 1
+        assert self.n >= 2
+        assert len(self.demand) == self.n
+        assert self.demand[0] == 0
+        assert len(self.coordinates.shape) == 2
+        assert self.coordinates.shape[0] == self.n
+        assert len(self.coordinates.shape) == 2
+        assert all(d >= 0 for d in self.demand)
 
     def is_valid_route(self, r: Route) -> bool:
         """Checks the validity of the route:
@@ -114,16 +122,22 @@ class CVRP:
         pos = self.coordinates
         plt.title(title)
 
+        # Plot the nodes proportional to its demand
+        min_node_size = 5
+        size_per_demand = 3
+
         # Plot nodes ids
         for i in range(self.n):
             x, y = self.coordinates[i, :]
             color = "black"
-            ax.scatter(x, y, s=250, color=color)  # circle
-            y_displacement = -0.5
-            x_displacement = -0.4 if i < 10 else -0.6
-            plt.annotate(
-                str(i), (x + x_displacement, y + y_displacement), color="white", size=10
-            )  # id
+            marker = "s" if i == 0 else "o"
+            size = 100 if i == 0 else min_node_size + size_per_demand * self.demand[i]
+            ax.scatter(x, y, s=size, color=color, marker=marker)
+            # y_displacement = -0.5
+            # x_displacement = -0.4 if i < 10 else -0.6
+            # plt.annotate(
+            #     str(i), (x + x_displacement, y + y_displacement), color="white", size=10
+            # )  # id
 
         # Plot the routes
         colormap = plt.cm.viridis
