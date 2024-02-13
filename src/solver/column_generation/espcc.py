@@ -206,7 +206,7 @@ class ESPCC:
             else:
                 raise ValueError(f"path does not match: {path}")
         except:
-            print(f"\tMethod {method} did not work...")
+            print(f"Method {method} did not work...")
             pass
 
         return path
@@ -228,17 +228,24 @@ class ESPCC:
         paths.append(self._solve_with_cspy(method="tabu"))
         paths.append(self._solve_with_cspy(method="grasp"))
         paths.append(self._solve_with_cspy(method="psolgent"))
+        paths.append(self._solve_with_cspy(method="greedy"))
 
         # Check the paths and compute their cost and feasibility
         solutions: List[float, List[int]] = []
         for p in paths:
-            if p is not None:
-                # Change the Source and Sink names
-                p[0] = 0  # this is the depot
-                p[-1] = self.N - 1  # this is the virtual depot
-                feasible, cost = self._evaluate_path(p)
+            if p is not None:  # p is like ['Source', '2', '5', 'Sink']
+                path_ints = []  # need to transform to ints
+                for i, node in enumerate(p):
+                    if i == 0:  # This is 'Source'
+                        path_ints.append(0)
+                    elif i == len(p) - 1:  # This is 'Sink'
+                        path_ints.append(self.N - 1)
+                    else:
+                        path_ints.append(int(node))
+
+                feasible, cost = self._evaluate_path(path_ints)
                 if feasible and cost < REDUCED_COST_MAX_VALUE:
-                    solutions.append((cost, p))
+                    solutions.append((cost, path_ints))
 
         # Return some of the solutions found
         return solutions

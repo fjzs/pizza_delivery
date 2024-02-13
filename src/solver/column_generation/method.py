@@ -30,6 +30,8 @@ class SolverColumnGeneration:
         self.log = Log()
         self.folder = folder
 
+        # TODO: fix the plotting is staying on
+
         # heuristic solution
         # self.initial_solution = initial_solution.closest_client(instance)
         self.initial_solution = initial_solution.one_route_per_client(instance)
