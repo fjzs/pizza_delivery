@@ -24,10 +24,13 @@ class Solution:
             clients_covered.update(r.clients)
         assert clients_covered == set(self.instance.customers)
 
-        # Compute the cost per route and solution cost
-        self.cost_per_route: Dict[int, float] = dict()
-        for id, r in self.routes.items():
-            cost = instance.get_route_cost(r)
-            self.cost_per_route[id] = cost
+    def get_cost(self) -> float:
+        """Retrieves the cost of this solution
 
-        self.total_cost: float = sum(self.cost_per_route.values())
+        Returns:
+            cost (float):
+        """
+        cost = 0
+        for r in self.routes.values():
+            cost += self.instance.get_route_cost(r)
+        return cost

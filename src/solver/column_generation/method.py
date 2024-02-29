@@ -34,16 +34,17 @@ class SolverColumnGeneration:
 
         # heuristic solution
         # self.initial_solution = initial_solution.closest_client(instance)
-        self.initial_solution = initial_solution.one_route_per_client(instance)
+        # self.initial_solution = initial_solution.one_route_per_client(instance)
+        self.initial_solution = initial_solution.clarke_and_wright(instance)
         instance.draw(
             self.initial_solution.routes,
-            title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",
+            title=f"Heuristic Cost = {round(self.initial_solution.get_cost(), 1)}",
             filename="heuristic",
             folder_to_save=folder,
         )
         instance.draw(
             self.initial_solution.routes,
-            title=f"Heuristic Cost = {round(self.initial_solution.total_cost, 1)}",
+            title=f"Heuristic Cost = {round(self.initial_solution.get_cost(), 1)}",
             filename="current",
             folder_to_save=folder,
         )

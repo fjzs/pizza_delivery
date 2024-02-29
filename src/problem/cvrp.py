@@ -168,5 +168,6 @@ class CVRP:
         # Save the fig
         filepath = os.path.join(folder_to_save, filename) + ".png"
         plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
+        fig.clear()
         plt.clf()
         print(f"Saved {filepath}")
