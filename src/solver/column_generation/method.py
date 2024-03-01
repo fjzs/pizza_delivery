@@ -1,5 +1,7 @@
 from problem.cvrp import CVRP, Route
 from problem.solution import Solution
+from solver.improver.method import Improver
+from utils.drawer import Drawer
 from utils.logger import Log
 
 from . import initial_solution
@@ -29,25 +31,15 @@ class SolverColumnGeneration:
         self.initial_solution: Solution = None
         self.log = Log()
         self.folder = folder
+        drawer = Drawer(self.folder, self.instance)
 
-        # TODO: fix the plotting is staying on
-
-        # heuristic solution
-        # self.initial_solution = initial_solution.closest_client(instance)
+        # Heuristic solution
+        self.initial_solution = initial_solution.closest_client(instance)
+        drawer.draw_solution(self.initial_solution, filename="Heuristic_closest")
         # self.initial_solution = initial_solution.one_route_per_client(instance)
-        self.initial_solution = initial_solution.clarke_and_wright(instance)
-        instance.draw(
-            self.initial_solution.routes,
-            title=f"Heuristic Cost = {round(self.initial_solution.get_cost(), 1)}",
-            filename="heuristic",
-            folder_to_save=folder,
-        )
-        instance.draw(
-            self.initial_solution.routes,
-            title=f"Heuristic Cost = {round(self.initial_solution.get_cost(), 1)}",
-            filename="current",
-            folder_to_save=folder,
-        )
+        # self.initial_solution = initial_solution.clarke_and_wright(instance)
+        # drawer.draw_solution(self.initial_solution, filename="Heuristic_cw")
+        drawer.draw_solution(self.initial_solution, filename=None, save_iteration=True)
 
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.initial_solution)
@@ -66,7 +58,7 @@ class SolverColumnGeneration:
             print("\nSOLVING INTEGER MP")
             print("----------------------------------------------")
             obj_value_integer, _ = self._solve_MP(is_linear=False)
-            self._draw_current_solution(i + 1)
+            drawer.draw_solution(self.master.get_solution(), save_iteration=True)
 
             # Solve the Linear MP to get the duals
             print("\n\nSOLVING LINEAR MP")
@@ -95,6 +87,10 @@ class SolverColumnGeneration:
                 break
 
         print(f"\n\nCOLUMN GENERATION ENDED!!!")
+
+        # Applying improvement
+        improver = Improver(self.initial_solution, 5, drawer)
+        final_solution = improver.apply()
 
         # Now save the log
         self.log.save(folder=folder)
@@ -139,28 +135,3 @@ class SolverColumnGeneration:
                 self.master.add_route(route, cost)
                 print(f"\t {i+1}: red-cost: {reduced_cost} path: {path}, cost: {cost}")
         return min_reduced_cost_entered
-
-    def _draw_current_solution(self, iteration: int, characters_length=3):
-        """Saves the current drawing of the MIP solution
-
-        Args:
-            iteration (int):
-            characters_length (int, optional):
-        """
-        solution = self.master.get_solution()
-        name = str(iteration).zfill(characters_length)
-        self.instance.draw(
-            routes=solution.routes,
-            title=f"Iteration #{name}, Z = {round(solution.total_cost, 1)}",
-            filename=name,
-            folder_to_save=self.folder,
-        )
-
-        # This is to create a video effect in visual studio, I'll have a window only
-        # displaying this solution so I can see in real time how the MIP changes
-        self.instance.draw(
-            routes=solution.routes,
-            title=f"Iteration #{name}, Z = {round(solution.total_cost, 1)}",
-            filename="current",
-            folder_to_save=self.folder,
-        )

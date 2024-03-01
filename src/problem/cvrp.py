@@ -1,11 +1,7 @@
 import os
 from typing import Dict, List
 
-import matplotlib.colors as mcolors
-import matplotlib.patches as patches
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.path import Path
 from scipy.spatial.distance import cdist
 
 from problem import instance
@@ -106,68 +102,3 @@ class CVRP:
         assert distances.shape == (n, n)
         assert np.all(distances >= 0)
         return distances
-
-    def draw(
-        self, routes: Dict[int, Route], title: str, filename: str, folder_to_save: str
-    ):
-        """Draw a set of routes
-
-        Args:
-            routes (Dict[int, Route]):
-            title (str):
-            filename (str):
-            folder_to_save (str):
-        """
-        fig, ax = plt.subplots()
-        pos = self.coordinates
-        plt.title(title)
-
-        # Plot the nodes proportional to its demand
-        min_node_size = 5
-        max_node_size = 200
-        min_demand = min(self.demand[1:])
-        max_demand = max(self.demand[1:])
-        range_demand = max_demand - min_demand + 1
-
-        # Plot nodes ids
-        for i in range(self.n):
-            x, y = self.coordinates[i, :]
-            color = "black"
-            marker = "s" if i == 0 else "o"
-            size = (
-                100
-                if i == 0
-                else min_node_size
-                + max_node_size * (self.demand[i] - min_demand) / range_demand
-            )
-            ax.scatter(x, y, s=size, color=color, marker=marker)
-            # y_displacement = -0.5
-            # x_displacement = -0.4 if i < 10 else -0.6
-            # plt.annotate(
-            #     str(i), (x + x_displacement, y + y_displacement), color="white", size=10
-            # )  # id
-
-        # Plot the routes
-        colormap = plt.cm.viridis
-        route_ids = routes.keys()
-        norm = mcolors.Normalize(vmin=min(route_ids), vmax=max(route_ids))
-        colors = {
-            id: colormap(norm(id)) for id in route_ids
-        }  # Get a unique color for each route_id
-
-        for id, route in routes.items():
-            if len(route.nodes) > 0:
-                col = colors[id]
-                verts = [pos[n] for n in route.nodes]
-                path = Path(verts)
-                patch = patches.PathPatch(
-                    path, facecolor="none", lw=1, zorder=0, edgecolor=col
-                )
-                ax.add_patch(patch)
-
-        # Save the fig
-        filepath = os.path.join(folder_to_save, filename) + ".png"
-        plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
-        fig.clear()
-        plt.clf()
-        print(f"Saved {filepath}")

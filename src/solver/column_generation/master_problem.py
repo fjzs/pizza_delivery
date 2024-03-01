@@ -67,7 +67,7 @@ class MasterProblem:
         # Load the initial solution
         for route_id in self.initial_solution.routes.keys():
             route = self.initial_solution.routes[route_id]
-            cost = self.initial_solution.cost_per_route[route_id]
+            cost = self.instance.get_route_cost(route)
             self.add_route(route, cost)
 
     def add_route(self, r: Route, cost: float):

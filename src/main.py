@@ -20,10 +20,10 @@ if __name__ == "__main__":
     # generate_from_vrp_file(folder=FOLDER_INSTANCES, instance_name="E-n22-k4")
 
     # Solve
-    instance = "E-n22-k4"
+    instance = "02"
     instance_folder = os.path.join(FOLDER_INSTANCES, instance)
     filepath = os.path.join(instance_folder, instance) + ".json"
     data = CVRP(filepath)
     solver = SolverColumnGeneration(
-        instance=data, folder=instance_folder, max_iterations=2
+        instance=data, folder=instance_folder, max_iterations=0
     )
