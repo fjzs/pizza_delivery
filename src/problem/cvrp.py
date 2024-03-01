@@ -61,12 +61,23 @@ class CVRP:
         Returns:
             bool: True if route is valid, Error if not
         """
-        assert r is not None
-        assert len(r.nodes) >= 3  # depot -> client -> depot is the shortest
-        assert r.nodes[0] == 0  # start is the depot
-        assert r.nodes[-1] == 0  # end is the depot
+        if r is None:
+            return False
+        if len(r.nodes) <= 2:
+            return False
+        if r.nodes[0] != 0:  # start is the depot
+            return False
+        if r.nodes[-1] != 0:  # end is the depot
+            return False
+        if len(set(r.nodes[1:-1])) != len(
+            r.nodes[1:-1]
+        ):  # there are duplicated clients
+            return False
+
         demand_covered = sum([self.demand[i] for i in r.clients])
-        assert demand_covered <= self.q  # constraint capacity
+        if demand_covered > self.q:  # constraint capacity
+            return False
+
         return True
 
     def get_route_cost(self, r: Route) -> float:

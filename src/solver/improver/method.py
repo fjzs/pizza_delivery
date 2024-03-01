@@ -2,7 +2,7 @@ from problem.cvrp import CVRP, Route
 from problem.solution import Solution
 from utils.drawer import Drawer
 
-from . import heuristic_2_opt_intra_route
+from . import heuristic_2_opt_inter_route, heuristic_2_opt_intra_route
 
 MIN_IMPROVEMENT = 0.01
 
@@ -35,19 +35,25 @@ class Improver:
         best_solution = self.initial_solution
         best_cost = best_solution.get_cost()
         finish = False
-        for i in range(self.max_iterations):
+        for _ in range(self.max_iterations):
 
             # Store the list of (cost, solution)
             solutions = []
-            heuristic1 = heuristic_2_opt_intra_route.get_neighborhood(best_solution)
-            for s in heuristic1:
-                solutions.append((s.get_cost(), s))
+            solutions.extend(
+                heuristic_2_opt_intra_route.get_neighborhood(best_solution)
+            )
+            solutions.extend(
+                heuristic_2_opt_inter_route.get_neighborhood(best_solution)
+            )
+            cost_solutions = []
+            for s in solutions:
+                cost_solutions.append((s.get_cost(), s))
 
             # Move to the best greedy
-            solutions.sort(key=lambda tup: tup[0])  # sort by cost
-            if solutions[0][0] + MIN_IMPROVEMENT < best_cost:
-                best_cost = solutions[0][0]
-                best_solution = solutions[0][1]
+            cost_solutions.sort(key=lambda tup: tup[0])  # sort by cost
+            if cost_solutions[0][0] + MIN_IMPROVEMENT < best_cost:
+                best_cost = cost_solutions[0][0]
+                best_solution = cost_solutions[0][1]
             else:
                 finish = True
 

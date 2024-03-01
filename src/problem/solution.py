@@ -16,7 +16,8 @@ class Solution:
         self.routes: Dict[int, Route] = routes
 
         # Check if they are feasible, error if not
-        [self.instance.is_valid_route(r) for r in self.routes.values()]
+        for r in self.routes.values():
+            assert self.instance.is_valid_route(r)
 
         # Check if the routes cover all the clients
         clients_covered = set()

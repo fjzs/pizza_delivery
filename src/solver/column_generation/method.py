@@ -34,10 +34,10 @@ class SolverColumnGeneration:
         drawer = Drawer(self.folder, self.instance)
 
         # Heuristic solution
-        self.initial_solution = initial_solution.closest_client(instance)
-        drawer.draw_solution(self.initial_solution, filename="Heuristic_closest")
+        # self.initial_solution = initial_solution.closest_client(instance)
+        # drawer.draw_solution(self.initial_solution, filename="Heuristic_closest")
         # self.initial_solution = initial_solution.one_route_per_client(instance)
-        # self.initial_solution = initial_solution.clarke_and_wright(instance)
+        self.initial_solution = initial_solution.clarke_and_wright(instance)
         # drawer.draw_solution(self.initial_solution, filename="Heuristic_cw")
         drawer.draw_solution(self.initial_solution, filename=None, save_iteration=True)
 
@@ -89,7 +89,7 @@ class SolverColumnGeneration:
         print(f"\n\nCOLUMN GENERATION ENDED!!!")
 
         # Applying improvement
-        improver = Improver(self.initial_solution, 5, drawer)
+        improver = Improver(self.initial_solution, 200, drawer)
         final_solution = improver.apply()
 
         # Now save the log
@@ -130,8 +130,12 @@ class SolverColumnGeneration:
                 # add route to the master problem
                 path[-1] = 0  # replace the last virtual node with the actual depot
                 route = Route(path)
-                self.instance.is_valid_route(route)
-                cost = self.instance.get_route_cost(route)
-                self.master.add_route(route, cost)
-                print(f"\t {i+1}: red-cost: {reduced_cost} path: {path}, cost: {cost}")
+                if self.instance.is_valid_route(route):
+                    cost = self.instance.get_route_cost(route)
+                    self.master.add_route(route, cost)
+                    print(
+                        f"\t {i+1}: red-cost: {reduced_cost} path: {path}, cost: {cost}"
+                    )
+                else:
+                    raise ValueError()
         return min_reduced_cost_entered
