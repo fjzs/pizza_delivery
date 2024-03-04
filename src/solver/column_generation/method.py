@@ -95,6 +95,9 @@ class SolverColumnGeneration:
         or until there are no more reduced-cost columns (routes)
         """
 
+        if self.cg_max_iterations == 0:
+            return
+
         # Create the master problem and fill it with the initial solution
         self.master = MasterProblem(self.solution)
 

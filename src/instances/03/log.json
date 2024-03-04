@@ -8,44 +8,58 @@
     },
     {
         "iteration": 2,
-        "min_reduced_cost": -464.20000000000005,
-        "number_routes": 8,
-        "of_integer_optimal_value": 761.3,
-        "of_linear_lower_bound": 761.3
-    },
-    {
-        "iteration": 3,
-        "min_reduced_cost": -439.1,
-        "number_routes": 11,
-        "of_integer_optimal_value": 761.3,
-        "of_linear_lower_bound": 761.3
-    },
-    {
-        "iteration": 4,
         "min_reduced_cost": null,
         "number_routes": 5,
         "of_integer_optimal_value": 744.8999999999999,
         "of_linear_lower_bound": null
     },
     {
-        "iteration": 5,
+        "iteration": 3,
         "min_reduced_cost": null,
         "number_routes": 5,
         "of_integer_optimal_value": 731.8,
         "of_linear_lower_bound": null
     },
     {
-        "iteration": 6,
+        "iteration": 4,
         "min_reduced_cost": null,
         "number_routes": 5,
         "of_integer_optimal_value": 721.5,
         "of_linear_lower_bound": null
     },
     {
-        "iteration": 7,
+        "iteration": 5,
         "min_reduced_cost": null,
         "number_routes": 5,
         "of_integer_optimal_value": 713.3,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 6,
+        "min_reduced_cost": null,
+        "number_routes": 5,
+        "of_integer_optimal_value": 708.7,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 7,
+        "min_reduced_cost": null,
+        "number_routes": 5,
+        "of_integer_optimal_value": 704.8999999999999,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 8,
+        "min_reduced_cost": null,
+        "number_routes": 5,
+        "of_integer_optimal_value": 703.0,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 9,
+        "min_reduced_cost": null,
+        "number_routes": 5,
+        "of_integer_optimal_value": 697.5999999999999,
         "of_linear_lower_bound": null
     }
 ]

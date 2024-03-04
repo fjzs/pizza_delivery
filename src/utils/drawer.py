@@ -5,6 +5,7 @@ import matplotlib.patches as patches
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.path import Path
+from matplotlib.ticker import MaxNLocator
 
 from problem.cvrp import CVRP
 from problem.solution import Solution
@@ -129,6 +130,7 @@ class Drawer:
         ax.legend(loc="upper right")
         ax.set_xlabel("Iteration")
         ax.set_ylabel("MIP Objective Function Value")
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         return ax
 
     def draw_solution(self, solution: Solution, filename: str):

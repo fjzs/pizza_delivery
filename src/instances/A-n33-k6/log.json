@@ -1,0 +1,93 @@
+[
+    {
+        "iteration": 1,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 865.3000000000001,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 2,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 849.5,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 3,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 837.6,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 4,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 826.2,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 5,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 817.8,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 6,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 808.8,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 7,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 803.1999999999999,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 8,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 798.6999999999999,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 9,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 788.5999999999999,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 10,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 784.4,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 11,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 770.6,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 12,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 760.0999999999999,
+        "of_linear_lower_bound": null
+    },
+    {
+        "iteration": 13,
+        "min_reduced_cost": null,
+        "number_routes": 6,
+        "of_integer_optimal_value": 759.0,
+        "of_linear_lower_bound": null
+    }
+]

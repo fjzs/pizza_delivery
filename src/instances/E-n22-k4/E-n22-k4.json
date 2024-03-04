@@ -1,6 +1,7 @@
 {
     "N": 22,
     "Q": 6000,
+    "best_known_value": 375,
     "coordinates": [
         [
             145.0,
