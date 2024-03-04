@@ -1,6 +1,7 @@
 from problem.cvrp import CVRP, Route
 from problem.solution import Solution
 from utils.drawer import Drawer
+from utils.logger import Log
 
 from . import heuristic_2_opt_inter_route, heuristic_2_opt_intra_route
 
@@ -25,8 +26,11 @@ class Improver:
         self.instance = initial_solution.instance
         self.drawer = drawer
 
-    def apply(self) -> Solution:
+    def apply(self, log: Log) -> Solution:
         """Generates a neighborhood of solutions and moves to the best one iteratively
+
+        Args:
+            log (Log): for logging results
 
         Returns:
             Solution:
@@ -50,10 +54,18 @@ class Improver:
                 cost_solutions.append((s.get_cost(), s))
 
             # Move to the best greedy
-            cost_solutions.sort(key=lambda tup: tup[0])  # sort by cost
+            cost_solutions.sort(key=lambda tup: tup[0])  # sort ascending by cost
             if cost_solutions[0][0] + MIN_IMPROVEMENT < best_cost:
                 best_cost = cost_solutions[0][0]
-                best_solution = cost_solutions[0][1]
+                best_solution: Solution = cost_solutions[0][1]
+
+                # Log the improvement
+                log.add(
+                    of_linear_lower_bound=None,
+                    of_integer_optimal_value=best_cost,
+                    number_routes=len(best_solution.routes),
+                    min_reduced_cost=None,
+                )
             else:
                 finish = True
 

@@ -7,26 +7,32 @@ from . import utils
 
 class Log:
     def __init__(self):
-        self.data = dict()
+        self.data = []
+
+    def get_last_iteration(self) -> int:
+        if len(self.data) > 0:
+            return self.data[-1]["iteration"]
+        else:
+            return 0
 
     def add(
         self,
-        iteration: int,
         of_linear_lower_bound: float,
         of_integer_optimal_value: float,
         number_routes: int,
         min_reduced_cost: float,
     ):
+        iteration = len(self.data) + 1
         row = dict()
         row["iteration"] = iteration
         row["of_linear_lower_bound"] = of_linear_lower_bound
         row["of_integer_optimal_value"] = of_integer_optimal_value
         row["number_routes"] = number_routes
         row["min_reduced_cost"] = min_reduced_cost
-        self.data[iteration] = row
+        self.data.append(row)
 
     def save(self, folder: str):
-        utils.save_dictionary(self.data, "log", folder)
+        utils.save_data(self.data, "log", folder)
 
     def plot(self, folder: str):
         self._plot_of(folder)

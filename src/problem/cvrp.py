@@ -22,6 +22,10 @@ class CVRP:
         """
         Number of nodes of this instance. Those are {0, 1, .., n-1}
         """
+        self.best_known_value: float = data["best_known_value"]
+        """
+        Best known objective function value for this instance
+        """
         self.customers: List[int] = list(range(1, self.n))
         """
         List of customers, they have ids {1, ..., n-1}

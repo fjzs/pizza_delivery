@@ -9,6 +9,8 @@ from matplotlib.path import Path
 from problem.cvrp import CVRP
 from problem.solution import Solution
 
+from .logger import Log
+
 MIN_NODE_SIZE = 10
 MAX_NODE_SIZE = 200
 DEPOT_SIZE = 100
@@ -21,6 +23,81 @@ class Drawer:
         self.instance = instance
         self.iteration = 1
         self.folder = folder
+
+    def draw_of_and_solution(self, solution: Solution, log: Log):
+        fig, axs = plt.subplots(1, 2, layout="constrained")
+        self._set_of_plot(log, axs[0])
+        self._set_solution_plot(solution, axs[1], log.get_last_iteration())
+        plt.savefig("both.png", bbox_inches="tight", pad_inches=0.1)
+        fig.clear()
+        plt.close()
+
+    def _set_solution_plot(self, solution: Solution, ax, iteration: int):
+
+        # Plot the nodes proportional to its demand
+        min_demand = min(self.instance.demand[1:])
+        max_demand = max(self.instance.demand[1:])
+        range_demand = max_demand - min_demand + 1
+
+        # Plot nodes ids
+        pos = self.instance.coordinates
+        for i in range(self.instance.n):
+            x, y = self.instance.coordinates[i, :]
+            color = "black"
+            marker = "s" if i == 0 else "o"
+            size = (
+                DEPOT_SIZE
+                if i == 0
+                else MIN_NODE_SIZE
+                + MAX_NODE_SIZE * (self.instance.demand[i] - min_demand) / range_demand
+            )
+            ax.scatter(x, y, s=size, color=color, marker=marker)
+
+        # Plot the routes
+        colormap = plt.cm.viridis
+        route_ids = solution.routes.keys()
+        norm = mcolors.Normalize(vmin=min(route_ids), vmax=max(route_ids))
+        colors = {
+            id: colormap(norm(id)) for id in route_ids
+        }  # Get a unique color for each route_id
+
+        for id, route in solution.routes.items():
+            if len(route.nodes) > 0:
+                col = colors[id]
+                verts = [pos[n] for n in route.nodes]
+                path = Path(verts)
+                patch = patches.PathPatch(
+                    path, facecolor="none", lw=1, zorder=0, edgecolor=col
+                )
+                ax.add_patch(patch)
+
+        ax.set_title(
+            f"Iteration #{str(iteration).zfill(ZFILL_DIGITS)}, cost = {round(solution.get_cost(), 1)}"
+        )
+        return ax
+
+    def _set_of_plot(self, log: Log, ax):
+        best_know_of_value = self.instance.best_known_value
+        iterations = range(1, log.get_last_iteration() + 1)
+        of_integer_values = [x["of_integer_optimal_value"] for x in log.data]
+
+        # Plot the objective function integer values
+        ax.plot(iterations, of_integer_values, label="OF MIP", color="red", marker="o")
+
+        # Plot the best known solution if it is known
+        if best_know_of_value:
+            ax.plot(
+                iterations,
+                [best_know_of_value for i in iterations],
+                label="Best Known Value",
+                color="black",
+                linestyle="dashed",
+            )
+        ax.set_title("Objective Function value per iteration")
+        ax.legend()
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("MIP Objective Function Value")
+        return ax
 
     def draw_solution(
         self,

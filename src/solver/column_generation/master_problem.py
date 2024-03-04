@@ -217,7 +217,7 @@ class MasterProblem:
             Solution:
         """
 
-        def remove_0_values(d: dict(), tolerance=float("1.0e-10")) -> dict():
+        def remove_0_values(d: Dict, tolerance=float("1.0e-10")) -> Dict:
             return {k: v for (k, v) in d.items() if v > tolerance}
 
         routes_ids_used = remove_0_values(self.model.getAttr("X", self.var_X))

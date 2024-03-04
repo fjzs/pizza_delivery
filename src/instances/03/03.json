@@ -1,6 +1,7 @@
 {
     "N": 21,
     "Q": 4,
+    "best_known_value": 100,
     "coordinates": [
         [
             0.0,

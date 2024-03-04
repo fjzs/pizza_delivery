@@ -74,7 +74,7 @@ def create(
 
 
 def save_instance(instance: dict, file_name: str, folder: str):
-    utils.save_dictionary(data=instance, file_name=file_name, folder=folder)
+    utils.save_data(data=instance, file_name=file_name, folder=folder)
 
 
 def load(filepath: str) -> dict:

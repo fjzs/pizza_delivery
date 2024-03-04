@@ -2,11 +2,11 @@ import json
 import os
 
 
-def save_dictionary(data: dict, file_name: str, folder: str) -> None:
-    """Saves the dict as a json file
+def save_data(data, file_name: str, folder: str) -> None:
+    """Saves the data as a json file
 
     Args:
-        data (dict):
+        data
         file_name (str): dont add the .json extension
         folder (str):
     """

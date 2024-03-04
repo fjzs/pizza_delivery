@@ -18,31 +18,87 @@ class SolverColumnGeneration:
         self,
         instance: CVRP,
         folder: str,
-        max_iterations: int,
+        cg_max_iterations: int,
+        improvement_iterations: int,
+        heuristic: str = "cw",
     ):
         """Initializes the solver
 
         Args:
             instance (CVRP): data for the problem
             folder (str): folder to save results
-            max_iterations (int, optional): Max iterations to run column generation
+            cg_max_iterations (int, optional): Max iterations to run column generation
+            improvement_iterations (int): Iterations to improve the solution.
+            heuristic (str): what heuristic to use to construct initial solution, it can
+            be 'cw' (Clarke & Wright), 'closest' (Closest client iteratively) or 'single'
+            (one route per client)
         """
+        assert heuristic in ["cw", "closest", "single"]
+        assert cg_max_iterations >= 0
+        assert improvement_iterations >= 0
+
         self.instance: CVRP = instance
-        self.initial_solution: Solution = None
+        self.solution: Solution = None
         self.log = Log()
         self.folder = folder
-        drawer = Drawer(self.folder, self.instance)
+        self.cg_max_iterations = cg_max_iterations
+        self.improver_max_iterations = improvement_iterations
+        self.heuristic = heuristic
+        self.drawer = Drawer(self.folder, self.instance)
+
+        # Apply the heuristic for solution construction
+        self._apply_heuristic()
+
+        # Apply column generation
+        self._apply_column_generation()
+
+        # Applying improvement
+        self._apply_improver()
+
+        # Now save the log
+        self.log.save(folder=folder)
+        # self.log.plot(folder=folder)
+        self.drawer.draw_of_and_solution(self.solution, self.log)
+
+    def _apply_heuristic(self):
+        """Applies the heuristic to generate an initial solution"""
 
         # Heuristic solution
-        # self.initial_solution = initial_solution.closest_client(instance)
-        # drawer.draw_solution(self.initial_solution, filename="Heuristic_closest")
-        # self.initial_solution = initial_solution.one_route_per_client(instance)
-        self.initial_solution = initial_solution.clarke_and_wright(instance)
-        # drawer.draw_solution(self.initial_solution, filename="Heuristic_cw")
-        drawer.draw_solution(self.initial_solution, filename=None, save_iteration=True)
+        heuristic_closest = initial_solution.closest_client(self.instance)
+        self.drawer.draw_solution(heuristic_closest, filename="Heuristic_closest")
+        heuristic_single = initial_solution.one_route_per_client(self.instance)
+        self.drawer.draw_solution(heuristic_single, filename="Heuristic_single")
+        heuristic_cw = initial_solution.clarke_and_wright(self.instance)
+        self.drawer.draw_solution(heuristic_cw, filename="Heuristic_cw")
+
+        # Save the heuristic as the first iteration
+        if self.heuristic == "cw":
+            self.solution = heuristic_cw
+        elif self.heuristic == "closest":
+            self.solution = heuristic_closest
+        elif self.heuristic == "single":
+            self.solution = heuristic_single
+        else:
+            raise ValueError(f"Heuristic {self.heuristic} not recognized")
+
+        # Log this info
+        self.log.add(
+            of_integer_optimal_value=None,
+            of_linear_lower_bound=self.solution.get_cost(),
+            number_routes=len(self.solution.routes),
+            min_reduced_cost=None,
+        )
+
+        # Draw the first iteration of the algorithm
+        self.drawer.draw_solution(self.solution, filename=None, save_iteration=True)
+
+    def _apply_column_generation(self):
+        """Runs the column generation algorithm for a fixed amount of iterations
+        or until there are no more reduced-cost columns (routes)
+        """
 
         # Create the master problem and fill it with the initial solution
-        self.master = MasterProblem(self.initial_solution)
+        self.master = MasterProblem(self.solution)
 
         # Create the pricing problem
         self.pricing = PricingProblem(
@@ -51,14 +107,17 @@ class SolverColumnGeneration:
             demand=self.instance.demand,
         )
 
-        for i in range(max_iterations):
+        for i in range(self.cg_max_iterations):
             print(f"\n\n========== MASTER ITERATION: {i+1} ==========")
 
             # Solve the Integer MP and draw solution
             print("\nSOLVING INTEGER MP")
             print("----------------------------------------------")
             obj_value_integer, _ = self._solve_MP(is_linear=False)
-            drawer.draw_solution(self.master.get_solution(), save_iteration=True)
+            self.drawer.draw_solution(
+                solution=self.master.get_solution(), filename=None, save_iteration=True
+            )
+            self.solution = self.master.get_solution()
 
             # Solve the Linear MP to get the duals
             print("\n\nSOLVING LINEAR MP")
@@ -74,7 +133,6 @@ class SolverColumnGeneration:
 
             # Record the log
             self.log.add(
-                iteration=i + 1,
                 of_linear_lower_bound=obj_value_linear,
                 of_integer_optimal_value=obj_value_integer,
                 number_routes=len(self.master.routes),
@@ -87,14 +145,6 @@ class SolverColumnGeneration:
                 break
 
         print(f"\n\nCOLUMN GENERATION ENDED!!!")
-
-        # Applying improvement
-        improver = Improver(self.initial_solution, 200, drawer)
-        final_solution = improver.apply()
-
-        # Now save the log
-        self.log.save(folder=folder)
-        self.log.plot(folder=folder)
 
     def _solve_MP(self, is_linear: bool):
         """Solves the Restricted Master Problem (RMP), either in its linear or integer form
@@ -139,3 +189,7 @@ class SolverColumnGeneration:
                 else:
                     raise ValueError()
         return min_reduced_cost_entered
+
+    def _apply_improver(self):
+        improver = Improver(self.solution, self.improver_max_iterations, self.drawer)
+        self.solution = improver.apply(self.log)
