@@ -57,8 +57,6 @@ class SolverColumnGeneration:
 
         # Now save the log
         self.log.save(folder=folder)
-        # self.log.plot(folder=folder)
-        self.drawer.draw_of_and_solution(self.solution, self.log)
 
     def _apply_heuristic(self):
         """Applies the heuristic to generate an initial solution"""
@@ -83,14 +81,14 @@ class SolverColumnGeneration:
 
         # Log this info
         self.log.add(
-            of_integer_optimal_value=None,
-            of_linear_lower_bound=self.solution.get_cost(),
+            of_linear_lower_bound=None,
+            of_integer_optimal_value=self.solution.get_cost(),
             number_routes=len(self.solution.routes),
             min_reduced_cost=None,
         )
 
         # Draw the first iteration of the algorithm
-        self.drawer.draw_solution(self.solution, filename=None, save_iteration=True)
+        self.drawer.draw_of_and_solution(self.solution, self.log)
 
     def _apply_column_generation(self):
         """Runs the column generation algorithm for a fixed amount of iterations
@@ -114,10 +112,8 @@ class SolverColumnGeneration:
             print("\nSOLVING INTEGER MP")
             print("----------------------------------------------")
             obj_value_integer, _ = self._solve_MP(is_linear=False)
-            self.drawer.draw_solution(
-                solution=self.master.get_solution(), filename=None, save_iteration=True
-            )
             self.solution = self.master.get_solution()
+            self.drawer.draw_of_and_solution(self.solution, self.log)
 
             # Solve the Linear MP to get the duals
             print("\n\nSOLVING LINEAR MP")

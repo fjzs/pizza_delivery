@@ -70,7 +70,7 @@ class Improver:
                 finish = True
 
             # Plot the current solution
-            self.drawer.draw_solution(best_solution, filename=None, save_iteration=True)
+            self.drawer.draw_of_and_solution(best_solution, log)
 
             if finish:
                 break

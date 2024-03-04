@@ -15,20 +15,42 @@ MIN_NODE_SIZE = 10
 MAX_NODE_SIZE = 200
 DEPOT_SIZE = 100
 ZFILL_DIGITS = 3
+FIGSIZE = (12, 6)
+
+# TODO: https://matplotlib.org/stable/gallery/animation/unchained.html#sphx-glr-gallery-animation-unchained-py
 
 
 class Drawer:
 
     def __init__(self, folder: str, instance: CVRP):
         self.instance = instance
-        self.iteration = 1
         self.folder = folder
 
+    def _save_figure(self, iteration: int):
+        """Saves the figure in the specified folder
+
+        Args:
+            iteration (int):
+        """
+        filepath = os.path.join(self.folder, "current") + ".png"
+        plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
+        filepath = (
+            os.path.join(self.folder, str(iteration).zfill(ZFILL_DIGITS)) + ".png"
+        )
+        plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
+
     def draw_of_and_solution(self, solution: Solution, log: Log):
-        fig, axs = plt.subplots(1, 2, layout="constrained")
-        self._set_of_plot(log, axs[0])
-        self._set_solution_plot(solution, axs[1], log.get_last_iteration())
-        plt.savefig("both.png", bbox_inches="tight", pad_inches=0.1)
+        """Draws both the objective function evolution and the solution
+
+        Args:
+            solution (Solution):
+            log (Log):
+        """
+        fig, axs = plt.subplots(1, 2, layout="constrained", figsize=FIGSIZE)
+        iteration = log.get_last_iteration()
+        self._set_of_plot(log, axs[0], iteration)
+        self._set_solution_plot(solution, axs[1], iteration)
+        self._save_figure(iteration)
         fig.clear()
         plt.close()
 
@@ -74,15 +96,25 @@ class Drawer:
         ax.set_title(
             f"Iteration #{str(iteration).zfill(ZFILL_DIGITS)}, cost = {round(solution.get_cost(), 1)}"
         )
+
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+
         return ax
 
-    def _set_of_plot(self, log: Log, ax):
+    def _set_of_plot(self, log: Log, ax, last_iteration: int):
         best_know_of_value = self.instance.best_known_value
-        iterations = range(1, log.get_last_iteration() + 1)
+        iterations = range(1, last_iteration + 1)
         of_integer_values = [x["of_integer_optimal_value"] for x in log.data]
 
         # Plot the objective function integer values
-        ax.plot(iterations, of_integer_values, label="OF MIP", color="red", marker="o")
+        ax.plot(
+            iterations,
+            of_integer_values,
+            label="Current Value",
+            color="red",
+            marker="o",
+        )
 
         # Plot the best known solution if it is known
         if best_know_of_value:
@@ -94,26 +126,20 @@ class Drawer:
                 linestyle="dashed",
             )
         ax.set_title("Objective Function value per iteration")
-        ax.legend()
+        ax.legend(loc="upper right")
         ax.set_xlabel("Iteration")
         ax.set_ylabel("MIP Objective Function Value")
         return ax
 
-    def draw_solution(
-        self,
-        solution: Solution,
-        filename: str,
-        save_iteration: bool = False,
-    ):
+    def draw_solution(self, solution: Solution, filename: str):
         """Draw a solution
 
         Args:
             solution (Solution): the solution to plot
             filename (str): (Optional name), for ex: "heuristic"
             folder_to_save (str): The folder to save all the plots
-            save_iteration (bool): True to save the plot with the iteration evolution
         """
-        assert (filename is not None) or save_iteration
+        assert filename is not None
 
         fig, ax = plt.subplots()
         pos = self.instance.coordinates
@@ -166,15 +192,15 @@ class Drawer:
             plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
             print(f"Saved {filepath}")
 
-        if save_iteration:
-            filename = str(self.iteration).zfill(ZFILL_DIGITS)
-            self.iteration += 1
-            filepath = os.path.join(self.folder, filename) + ".png"
-            plt.title(f"Iteration #{filename}, cost = {round(solution.get_cost(), 1)}")
-            plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
-            filepath = os.path.join(self.folder, "current") + ".png"
-            plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)  # current.png
-            print(f"Saved {filepath}")
+        # if save_iteration:
+        #     filename = str(self.iteration).zfill(ZFILL_DIGITS)
+        #     self.iteration += 1
+        #     filepath = os.path.join(self.folder, filename) + ".png"
+        #     plt.title(f"Iteration #{filename}, cost = {round(solution.get_cost(), 1)}")
+        #     plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)
+        #     filepath = os.path.join(self.folder, "current") + ".png"
+        #     plt.savefig(filepath, bbox_inches="tight", pad_inches=0.1)  # current.png
+        #     print(f"Saved {filepath}")
 
         fig.clear()
         plt.close()

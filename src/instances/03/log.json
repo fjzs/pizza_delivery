@@ -3,8 +3,8 @@
         "iteration": 1,
         "min_reduced_cost": null,
         "number_routes": 5,
-        "of_integer_optimal_value": null,
-        "of_linear_lower_bound": 761.3
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": null
     },
     {
         "iteration": 2,
