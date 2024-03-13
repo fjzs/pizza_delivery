@@ -4,6 +4,8 @@ import numpy as np
 
 from .espcc import ESPCC
 
+ALPHA_BEST_EDGES = [None, 0.3, 0.5, 0.7, 0.9]
+
 
 class PricingProblem:
     """
@@ -40,12 +42,10 @@ class PricingProblem:
         assert len(client_duals) == self.num_nodes - 1
         self.client_duals = client_duals
 
-    def solve(self) -> List[tuple[float, List[int]]]:
-        """Solves this problem with the goal of finding reduced-cost
-        routes
-
-        Returns:
-            solutions (List[tuple[float, List[int]]]): List of (reduced_cost, path)
+    def _set_up_cost_and_times(self):
+        """Set up the cost matrix and the times used on each arc.
+        It will initialize the self.cost and self.time attributes
+        of this class
         """
         # Number of nodes in the original network
         n = self.num_nodes
@@ -79,20 +79,67 @@ class PricingProblem:
         # From node i you cant go to node i
         np.fill_diagonal(cost, np.inf)
         # print(f"\ncost after duals:\n{cost}")
+        self.cost = cost
 
         # Resources (demand of each client)
         times = np.zeros((n + 1, n + 1))
         demands = np.zeros((1, n + 1))
         demands[0, 0:n] = self.demand
         times += demands
-        # From node i you cant go to node i
         np.fill_diagonal(times, np.inf)
-        # print(f"\ntimes:\n{times}")
+        self.time = times
 
-        elementary_path_problem = ESPCC(
-            costs=cost, times=times, T=self.capacity, source=0, target=n
-        )
+    def _get_cost_BestEdges(self, alpha: float = None) -> np.ndarray:
+        """Sets to infinity those edges which d_ij > alpha * max_dual
 
-        # Solve the problem
-        cost_path_solutions = elementary_path_problem.solve()
-        return cost_path_solutions
+        Args:
+            alpha (float, optional):
+
+        Returns:
+            cost (np.ndarray):
+        """
+        cost = self.cost.copy()
+        if alpha:
+            max_dual = max(self.client_duals.values())
+            n = self.num_nodes
+            for i in range(n):
+                for j in range(n):
+                    d_ij = self.distances[i, j]
+                    if i != j and d_ij > alpha * max_dual:
+                        # by setting this to inf, the edge wont be available
+                        cost[i, j] = np.inf
+                        if i == 0:
+                            # this is the cost from the customer to the virtual depot
+                            cost[j, n] = np.inf
+        return cost
+
+    def solve(self) -> List[tuple[float, List[int]]]:
+        """Solves this problem with the goal of finding reduced-cost
+        routes
+
+        Returns:
+            solutions (List[tuple[float, List[int]]]): List of (reduced_cost, path)
+        """
+        self._set_up_cost_and_times()
+
+        # Apply the 'Best Edges Strategy' from https://pubsonline.informs.org/doi/10.1287/trsc.1050.0118
+        # --> remove edges such that cost_ij > alpha * max_dual_variable
+        # 0 < alpha < 1 is a parameter
+
+        cost_paths = []
+        print(f"\nStarting Alpha-Pricing")
+        for alpha in ALPHA_BEST_EDGES:
+            print(f"\n\tAlpha = {alpha}")
+            cost = self._get_cost_BestEdges(alpha)
+            elementary_path_problem = ESPCC(
+                costs=cost,
+                times=self.time,
+                T=self.capacity,
+                source=0,
+                target=self.num_nodes,
+            )
+            # Solve the problem
+            cost_path_solutions = elementary_path_problem.solve()
+            cost_paths.extend(cost_path_solutions)
+
+        return cost_paths

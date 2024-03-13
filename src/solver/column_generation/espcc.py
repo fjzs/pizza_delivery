@@ -7,6 +7,7 @@ import numpy as np
 
 REDUCED_COST_MAX_VALUE = -0.1
 TIME_LIMIT_S = 5
+REPETITIONS_PER_HEURISTIC = 3
 
 
 class ESPCC:
@@ -138,17 +139,22 @@ class ESPCC:
                         res_cost=np.asarray([0, time_ij]),
                     )
         self.graph = G
+        print(f"\tGraph has {len(G.edges)} edges")
 
-    def _solve_with_cspy(self, method: str) -> List[int]:
+    def _solve_with_cspy(
+        self, method: str, threshold: float = REDUCED_COST_MAX_VALUE
+    ) -> List[int]:
         """
         Uses the Bidirectional labeling algorithm with dynamic halfway point from Tilk et al (2017), implemented
         in the package cspy. https://cspy.readthedocs.io/en/latest/python_api/cspy.BiDirectional.html
 
         Args:
         * method (str)
+        * threshold (float)
 
         Returns:
         * path (List[int]): an elementary path in the graph: ['Source', ..., 'Sink']
+        * reduced_cost (float)
         """
 
         # print(f"\nEdges in the ESPCC:")
@@ -158,14 +164,19 @@ class ESPCC:
         algorithm = None
         if method == "bidirectional":
             algorithm = cspy.BiDirectional(
-                G=self.graph, max_res=[self.T, self.T], min_res=[0, 0], elementary=False
+                G=self.graph,
+                max_res=[self.T, self.T],
+                min_res=[0, 0],
+                elementary=True,
+                time_limit=TIME_LIMIT_S,
+                threshold=threshold,
             )
         elif method == "tabu":
             algorithm = cspy.Tabu(
                 G=self.graph,
                 max_res=[self.T, self.T],
                 min_res=[0, 0],
-                threshold=REDUCED_COST_MAX_VALUE,
+                threshold=threshold,
                 time_limit=TIME_LIMIT_S,
             )
         elif method == "greedy":
@@ -173,43 +184,48 @@ class ESPCC:
                 G=self.graph,
                 max_res=[self.T, self.T],
                 min_res=[0, 0],
-                threshold=REDUCED_COST_MAX_VALUE,
+                threshold=threshold,
+                time_limit=TIME_LIMIT_S,
             )
-        elif method == "grasp":
+        elif method == "grasp":  # not working
             algorithm = cspy.GRASP(
                 G=self.graph,
                 max_res=[self.T, self.T],
                 min_res=[0, 0],
-                threshold=REDUCED_COST_MAX_VALUE,
+                threshold=threshold,
+                time_limit=TIME_LIMIT_S,
             )
         elif method == "psolgent":
             algorithm = cspy.PSOLGENT(
                 G=self.graph,
                 max_res=[self.T, self.T],
                 min_res=[0, 0],
-                threshold=REDUCED_COST_MAX_VALUE,
+                threshold=threshold,
+                time_limit=TIME_LIMIT_S,
             )
         else:
             raise ValueError(f"method: {method} not recognized")
 
         path = None
+        red_cost = None
 
         try:
+            print(f"\t\tthreshold: {threshold}")
             algorithm.run()
             path = algorithm.path
-            print(f"\nMethod: {method} algorithm result:")
-            print(f"\tpath: {path}")
-            print(f"\treduced-cost: {algorithm.total_cost}")
-            print(f"\tdemand captured: {algorithm.consumed_resources[1]} / {self.T}")
+            red_cost = algorithm.total_cost
+            print(f"\t\tpath: {path}")
+            print(f"\t\treduced-cost: {red_cost}")
+            print(f"\t\tdemand captured: {algorithm.consumed_resources[1]} / {self.T}")
             if path[0] == "Source" and path[-1] == "Sink":
                 pass
             else:
                 raise ValueError(f"path does not match: {path}")
         except:
-            print(f"Method {method} did not work...")
+            print(f"\t\t[!] did not return a solution")
             pass
 
-        return path
+        return path, red_cost
 
     def solve(self) -> List[tuple[float, List[int]]]:
         """Solves the ESPCC by multiple methods to get various columns
@@ -221,14 +237,41 @@ class ESPCC:
         # First prepare the graph
         self._prepare_graph()
 
-        # Store the paths here and use the first exact method as pivot
-        # TODO TEST THIS
+        # Solve with heuristics, only use the exact method if the heuristics fail
+        # psolgent works with time limit
+        # tabu does not work with time limit
+        # greedy does not work with time limit
         paths = []
-        paths.append(self._solve_with_cspy(method="bidirectional"))
-        paths.append(self._solve_with_cspy(method="tabu"))
-        paths.append(self._solve_with_cspy(method="grasp"))
-        paths.append(self._solve_with_cspy(method="psolgent"))
-        paths.append(self._solve_with_cspy(method="greedy"))
+        heuristics = ["psolgent"]
+        for h in heuristics:
+            print(f"\n\tRunning heuristic: {h}")
+            path, reduced_cost_original = self._solve_with_cspy(method=h)
+            if path is not None:
+                paths.append(path)
+
+                # Do a binary search to find the best path
+                right = reduced_cost_original  # this is negative
+                left = reduced_cost_original * 10  # this is more negative
+                for i in range(REPETITIONS_PER_HEURISTIC):
+                    print(f"\n\t\titeration {i+1} / {REPETITIONS_PER_HEURISTIC}")
+                    mid = (right + left) / 2.0
+                    path, red_cost = self._solve_with_cspy(method=h, threshold=mid)
+
+                    # there was a solution in the time limit
+                    if path is not None:
+                        paths.append(path)
+                        right = red_cost * 0.75
+                        left = min(left, red_cost * 1.50)
+
+                    # there was not a solution in the time limit
+                    else:
+                        left = mid
+
+        if len(paths) == 0:
+            print(f"\n\tRunning exact: bidirectional")
+            path, reduced_cost_original = self._solve_with_cspy(method="bidirectional")
+            if path is not None:
+                paths.append(path)
 
         # Check the paths and compute their cost and feasibility
         solutions: List[float, List[int]] = []
