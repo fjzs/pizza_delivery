@@ -8,58 +8,212 @@
     },
     {
         "iteration": 2,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 744.8999999999999,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -323.6,
+        "number_routes": 16,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 3,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 731.8,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -321.4,
+        "number_routes": 33,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 4,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 721.5,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -228.4,
+        "number_routes": 40,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 5,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 713.3,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -93.3285714285714,
+        "number_routes": 48,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 6,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 708.7,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -75.30000000000001,
+        "number_routes": 57,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 7,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 704.8999999999999,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -47.09999999999992,
+        "number_routes": 66,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 8,
-        "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 703.0,
-        "of_linear_lower_bound": null
+        "min_reduced_cost": -76.93333333333334,
+        "number_routes": 75,
+        "of_integer_optimal_value": 761.3,
+        "of_linear_lower_bound": 761.3
     },
     {
         "iteration": 9,
+        "min_reduced_cost": -58.93999999999998,
+        "number_routes": 81,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 752.0
+    },
+    {
+        "iteration": 10,
+        "min_reduced_cost": -67.88333333333333,
+        "number_routes": 87,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 742.9833333333332
+    },
+    {
+        "iteration": 11,
+        "min_reduced_cost": -41.966666666666605,
+        "number_routes": 93,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 722.0
+    },
+    {
+        "iteration": 12,
+        "min_reduced_cost": -39.555555555555536,
+        "number_routes": 94,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 720.3888888888888
+    },
+    {
+        "iteration": 13,
+        "min_reduced_cost": -25.099999999999977,
+        "number_routes": 96,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 711.7083333333333
+    },
+    {
+        "iteration": 14,
+        "min_reduced_cost": -26.099999999999966,
+        "number_routes": 101,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 701.025
+    },
+    {
+        "iteration": 15,
+        "min_reduced_cost": -44.55000000000004,
+        "number_routes": 103,
+        "of_integer_optimal_value": 748.8,
+        "of_linear_lower_bound": 701.025
+    },
+    {
+        "iteration": 16,
+        "min_reduced_cost": -53.225,
+        "number_routes": 108,
+        "of_integer_optimal_value": 748.1999999999999,
+        "of_linear_lower_bound": 701.025
+    },
+    {
+        "iteration": 17,
+        "min_reduced_cost": -14.900000000000055,
+        "number_routes": 110,
+        "of_integer_optimal_value": 748.1999999999999,
+        "of_linear_lower_bound": 683.7499999999999
+    },
+    {
+        "iteration": 18,
+        "min_reduced_cost": -21.9,
+        "number_routes": 112,
+        "of_integer_optimal_value": 748.1999999999999,
+        "of_linear_lower_bound": 683.7499999999999
+    },
+    {
+        "iteration": 19,
+        "min_reduced_cost": -23.925,
+        "number_routes": 114,
+        "of_integer_optimal_value": 748.1999999999999,
+        "of_linear_lower_bound": 683.7499999999999
+    },
+    {
+        "iteration": 20,
+        "min_reduced_cost": -11.300000000000043,
+        "number_routes": 116,
+        "of_integer_optimal_value": 748.1999999999999,
+        "of_linear_lower_bound": 683.7499999999999
+    },
+    {
+        "iteration": 21,
+        "min_reduced_cost": -27.750000000000014,
+        "number_routes": 119,
+        "of_integer_optimal_value": 748.1999999999999,
+        "of_linear_lower_bound": 683.7499999999999
+    },
+    {
+        "iteration": 22,
+        "min_reduced_cost": -10.29999999999999,
+        "number_routes": 121,
+        "of_integer_optimal_value": 729.7,
+        "of_linear_lower_bound": 683.7499999999999
+    },
+    {
+        "iteration": 23,
+        "min_reduced_cost": -9.300000000000015,
+        "number_routes": 123,
+        "of_integer_optimal_value": 729.7,
+        "of_linear_lower_bound": 676.5500000000001
+    },
+    {
+        "iteration": 24,
+        "min_reduced_cost": -19.499999999999922,
+        "number_routes": 125,
+        "of_integer_optimal_value": 715.1,
+        "of_linear_lower_bound": 676.5500000000001
+    },
+    {
+        "iteration": 25,
+        "min_reduced_cost": -8.399999999999999,
+        "number_routes": 128,
+        "of_integer_optimal_value": 715.1,
+        "of_linear_lower_bound": 673.125
+    },
+    {
+        "iteration": 26,
+        "min_reduced_cost": -16.224999999999927,
+        "number_routes": 131,
+        "of_integer_optimal_value": 714.0,
+        "of_linear_lower_bound": 668.925
+    },
+    {
+        "iteration": 27,
+        "min_reduced_cost": -13.733333333333277,
+        "number_routes": 133,
+        "of_integer_optimal_value": 714.0,
+        "of_linear_lower_bound": 661.9916666666668
+    },
+    {
+        "iteration": 28,
+        "min_reduced_cost": -6.949999999999989,
+        "number_routes": 135,
+        "of_integer_optimal_value": 714.0,
+        "of_linear_lower_bound": 661.9916666666668
+    },
+    {
+        "iteration": 29,
+        "min_reduced_cost": -5.666666666666625,
+        "number_routes": 137,
+        "of_integer_optimal_value": 714.0000000000001,
+        "of_linear_lower_bound": 660.8333333333335
+    },
+    {
+        "iteration": 30,
+        "min_reduced_cost": -1.6333333333333044,
+        "number_routes": 138,
+        "of_integer_optimal_value": 692.9,
+        "of_linear_lower_bound": 660.8333333333335
+    },
+    {
+        "iteration": 31,
         "min_reduced_cost": null,
-        "number_routes": 5,
-        "of_integer_optimal_value": 697.5999999999999,
-        "of_linear_lower_bound": null
+        "number_routes": 138,
+        "of_integer_optimal_value": 692.9,
+        "of_linear_lower_bound": 660.7312499999999
     }
 ]

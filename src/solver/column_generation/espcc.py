@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 
 REDUCED_COST_MAX_VALUE = -0.1
-TIME_LIMIT_S = 5
+TIME_LIMIT_S = 10
 REPETITIONS_PER_HEURISTIC = 3
 
 
@@ -249,7 +249,7 @@ class ESPCC:
             if path is not None:
                 paths.append(path)
 
-                # Do a binary search to find the best path
+                # Do a binary search to find multiple good paths
                 right = reduced_cost_original  # this is negative
                 left = reduced_cost_original * 10  # this is more negative
                 for i in range(REPETITIONS_PER_HEURISTIC):

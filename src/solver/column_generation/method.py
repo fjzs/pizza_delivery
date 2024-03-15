@@ -61,21 +61,13 @@ class SolverColumnGeneration:
     def _apply_heuristic(self):
         """Applies the heuristic to generate an initial solution"""
 
-        # Heuristic solution
-        heuristic_closest = initial_solution.closest_client(self.instance)
-        self.drawer.draw_solution(heuristic_closest, filename="Heuristic_closest")
-        heuristic_single = initial_solution.one_route_per_client(self.instance)
-        self.drawer.draw_solution(heuristic_single, filename="Heuristic_single")
-        heuristic_cw = initial_solution.clarke_and_wright(self.instance)
-        self.drawer.draw_solution(heuristic_cw, filename="Heuristic_cw")
-
         # Save the heuristic as the first iteration
         if self.heuristic == "cw":
-            self.solution = heuristic_cw
+            self.solution = initial_solution.clarke_and_wright(self.instance)
         elif self.heuristic == "closest":
-            self.solution = heuristic_closest
+            self.solution = initial_solution.closest_client(self.instance)
         elif self.heuristic == "single":
-            self.solution = heuristic_single
+            self.solution = initial_solution.one_route_per_client(self.instance)
         else:
             raise ValueError(f"Heuristic {self.heuristic} not recognized")
 
@@ -111,13 +103,6 @@ class SolverColumnGeneration:
         for i in range(self.cg_max_iterations):
             print(f"\n\n========== MASTER ITERATION: {i+1} ==========")
 
-            # Solve the Integer MP and draw solution
-            print("\nSOLVING INTEGER MP")
-            print("----------------------------------------------")
-            obj_value_integer, _ = self._solve_MP(is_linear=False)
-            self.solution = self.master.get_solution()
-            self.drawer.draw_of_and_solution(self.solution, self.log)
-
             # Solve the Linear MP to get the duals
             print("\n\nSOLVING LINEAR MP")
             print("----------------------------------------------")
@@ -130,6 +115,12 @@ class SolverColumnGeneration:
             print("----------------------------------------------")
             min_reduced_cost_entered = self._solve_pricing()
 
+            # Solve the Integer MP to **see** the current solution (this can be skipped until the final iteration)
+            print("\nSOLVING INTEGER MP")
+            print("----------------------------------------------")
+            obj_value_integer, _ = self._solve_MP(is_linear=False)
+            self.solution = self.master.get_solution()
+
             # Record the log
             self.log.add(
                 of_linear_lower_bound=obj_value_linear,
@@ -137,6 +128,9 @@ class SolverColumnGeneration:
                 number_routes=len(self.master.routes),
                 min_reduced_cost=min_reduced_cost_entered,
             )
+
+            # Draw the current integer solution
+            self.drawer.draw_of_and_solution(self.solution, self.log)
 
             # If there are no negative reduced-cost columns, stop the process
             if min_reduced_cost_entered is None:

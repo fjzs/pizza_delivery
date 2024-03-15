@@ -4,7 +4,7 @@ import numpy as np
 
 from .espcc import ESPCC
 
-ALPHA_BEST_EDGES = [None, 0.3, 0.5, 0.7, 0.9]
+ALPHA_BEST_EDGES = [None, 0.3, 0.4, 0.5, 0.7, 0.9]
 
 
 class PricingProblem:
@@ -62,7 +62,7 @@ class PricingProblem:
         cost[-1, :] = np.inf
         # depot to depot is not allowed
         cost[0, -1] = np.inf
-        # returning to depot is symmetric
+        # distance when returning to artificial depot is symmetric
         cost[1:, -1] = cost[1:, 0]
         # Nobody can go to node 0
         cost[:, 0] = np.inf
