@@ -8,19 +8,19 @@ FOLDER_INSTANCES = ".\\src\\instances\\"
 
 if __name__ == "__main__":
 
-    instance = "A-n33-k6"
+    instance_name = "CMT1"
 
     # # Generate the .json from the original .vrp file
-    # generate_from_vrp_file(folder=FOLDER_INSTANCES, instance_name=instance)
+    # generate_from_vrp_file(folder=FOLDER_INSTANCES, instance_name=instance_name)
 
     # Solve
-    instance_folder = os.path.join(FOLDER_INSTANCES, instance)
-    filepath = os.path.join(instance_folder, instance) + ".json"
-    data = CVRP(filepath)
+    instance_folder = os.path.join(FOLDER_INSTANCES, instance_name)
+    filepath = os.path.join(instance_folder, instance_name) + ".json"
+    instance = CVRP(filepath)
     solver = SolverColumnGeneration(
-        instance=data,
+        instance=instance,
         folder=instance_folder,
-        cg_max_iterations=100,
-        improvement_iterations=0,
+        cg_max_iterations=0,
+        improvement_iterations=100,
         heuristic="cw",
     )
